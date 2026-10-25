@@ -100,17 +100,25 @@
 
   <span class="lbl" id="methodLbl">Comando densità</span>
   <div class="seg" role="radiogroup" aria-labelledby="methodLbl">
-    <input type="radio" name="method" id="mA" value="A" checked><label for="mA">A<br>1F 11 02</label>
+    <input type="radio" name="method" id="mA" value="A" checked><label for="mA">A<br>ePrinter</label>
     <input type="radio" name="method" id="mB" value="B"><label for="mB">B<br>1B 4E 04</label>
     <input type="radio" name="method" id="mAB" value="AB"><label for="mAB">Entrambi</label>
   </div>
-  <p class="help">Sono le due varianti usate dalle stampanti Phomemo. Provale tutte e due.</p>
+  <p class="help">A è il comando che usa ePrinter per la M08F (1F 11 02 + 1F 11 37). B è una variante Phomemo più vecchia.</p>
+
+  <label class="lbl" for="heat">Calore della testina</label>
+  <select id="heat">
+    <option value="64">Normale (64) – come ePrinter</option>
+    <option value="96">Forte (96) – come ePrinter al massimo</option>
+  </select>
+  <label class="check"><input type="checkbox" id="optMirror" checked> Specchia l'immagine (ePrinter la specchia sempre per i tatuaggi)</label>
 
   <label class="lbl" for="media">Tipo di carta</label>
   <select id="media">
-    <option value="0b">Continua / fogli singoli (0B)</option>
-    <option value="0a">Con spazi tra le etichette (0A)</option>
+    <option value="0b">Foglio singolo / stencil (0B) – come ePrinter</option>
+    <option value="38">Formato speciale (38)</option>
     <option value="26">Con tacca nera (26)</option>
+    <option value="0a">Con spazi tra le etichette (0A)</option>
     <option value="none">Non inviare</option>
   </select>
 
@@ -137,7 +145,7 @@
   <details>
     <summary>Avanzate e registro</summary>
     <label class="check"><input type="checkbox" id="optRaw" checked> Invia 1F 11 35 00 (dati non compressi)</label>
-    <label class="check"><input type="checkbox" id="optInit"> Invia ESC @ (reset) all'inizio</label>
+    <label class="check"><input type="checkbox" id="optInit" checked> Invia ESC @ (reset) all'inizio</label>
     <label class="check"><input type="checkbox" id="optFeed" checked> Avanza la carta alla fine (1B 64 02)</label>
     <div class="row">
       <div><label class="lbl" for="chunk">Pacchetto (byte)</label><input id="chunk" type="number" value="128" min="20" max="512"></div>
@@ -188,7 +196,7 @@
   if (!navigator.bluetooth) { $('nobt').hidden = false; $('btnConnect').disabled = true; }
 
   $('density').addEventListener('input', e => { $('densityVal').textContent = e.target.value; drawPreview(); });
-  ['media', 'width'].forEach(id => $(id).addEventListener('change', drawPreview));
+  ['media', 'width', 'heat', 'optMirror'].forEach(id => $(id).addEventListener('change', drawPreview));
   document.querySelectorAll('input[name=method]').forEach(r => r.addEventListener('change', drawPreview));
 
   // ---------- Bluetooth ----------
@@ -252,12 +260,15 @@
       density: parseInt($('density').value, 10),
       method: document.querySelector('input[name=method]:checked').value,
       media: $('media').value,
-      width: parseInt($('width').value, 10)
+      width: parseInt($('width').value, 10),
+      mirror: $('optMirror').checked
     };
   }
 
   function drawStrip(ctx, w, h, s) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    if (s.mirror) { ctx.translate(w, 0); ctx.scale(-1, 1); }
     ctx.fillStyle = '#000';
     const pad = Math.round(w * 0.03);
     const fs = Math.round(h * 0.32);
@@ -311,7 +322,7 @@
     const parts = [];
     if ($('optInit').checked) parts.push([0x1b, 0x40]);
     if (s.media !== 'none') parts.push([0x1f, 0x11, parseInt(s.media, 16)]);
-    if (s.method === 'A' || s.method === 'AB') parts.push([0x1f, 0x11, 0x02, s.density]);
+    if (s.method === 'A' || s.method === 'AB') { parts.push([0x1f, 0x11, 0x02, s.density]); parts.push([0x1f, 0x11, 0x37, parseInt($('heat').value, 16)]); }
     if (s.method === 'B' || s.method === 'AB') parts.push([0x1b, 0x4e, 0x04, s.density]);
     if ($('optRaw').checked) parts.push([0x1f, 0x11, 0x35, 0x00]);
     const img = rasterize(s.width, lines, s);
