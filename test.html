@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test Stampante M08F</title>
+<style>
+  :root {
+    --bg: #0F172A;
+    --card: #1B2336;
+    --muted: #272F42;
+    --border: #475569;
+    --fg: #F8FAFC;
+    --fg-muted: #94A3B8;
+    --accent: #22C55E;
+    --on-accent: #0F172A;
+    --danger: #EF4444;
+    --warn: #F59E0B;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body {
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+    max-width: 640px; margin: 0 auto;
+  }
+  h1 { font-size: 22px; margin: 4px 0 2px; letter-spacing: -0.01em; }
+  .sub { color: var(--fg-muted); margin: 0 0 16px; font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--muted); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .step { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 17px; font-weight: 600; }
+  .num { width: 26px; height: 26px; border-radius: 50%; background: var(--muted); display: grid; place-items: center; font-size: 13px; flex: none; }
+  label.lbl { display: block; font-weight: 600; font-size: 14px; margin: 14px 0 6px; }
+  .help { color: var(--fg-muted); font-size: 13px; margin: 4px 0 0; }
+  button {
+    width: 100%; min-height: 48px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--muted); color: var(--fg); font: inherit; font-weight: 600; cursor: pointer;
+    transition: transform .12s ease, opacity .2s ease, background .2s ease;
+  }
+  button:active { transform: scale(0.98); }
+  button.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  select, input[type=text], input[type=number] {
+    width: 100%; min-height: 46px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--fg); font: inherit; padding: 0 12px;
+  }
+  .status { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-top: 10px; color: var(--fg-muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); flex: none; }
+  .dot.on { background: var(--accent); }
+  .density-wrap { display: flex; align-items: center; gap: 14px; }
+  .density-val { font-size: 32px; font-weight: 700; min-width: 48px; text-align: center; font-variant-numeric: tabular-nums; }
+  input[type=range] { flex: 1; accent-color: var(--accent); height: 44px; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg label { min-height: 46px; display: grid; place-items: center; text-align: center; border: 1px solid var(--border); border-radius: 10px; font-size: 13px; font-weight: 600; padding: 4px; cursor: pointer; line-height: 1.25; }
+  .seg input:checked + label { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .seg input:focus-visible + label { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }
+  .check input { width: 22px; height: 22px; accent-color: var(--accent); }
+  .progress { height: 6px; background: var(--muted); border-radius: 3px; overflow: hidden; margin-top: 12px; }
+  .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .15s linear; }
+  details summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+  #log {
+    background: #020617; border: 1px solid var(--muted); border-radius: 10px; padding: 10px;
+    font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; color: #CBD5E1;
+    height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-all; margin-top: 8px;
+  }
+  #log .in { color: #86EFAC; } #log .err { color: #FCA5A5; } #log .info { color: #93C5FD; }
+  .warnbox { border: 1px solid var(--warn); color: #FDE68A; border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 14px; }
+  canvas { width: 100%; height: auto; background: #fff; border-radius: 8px; margin-top: 10px; image-rendering: pixelated; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<h1>Test Stampante M08F</h1>
+<p class="sub">Prova di densità e tipo di carta via Bluetooth. Apri questa pagina nel browser <b>Bluefy</b> sull'iPhone.</p>
+
+<div id="nobt" class="warnbox" hidden>Questo browser non supporta il Bluetooth. Su iPhone apri la pagina con l'app Bluefy.</div>
+
+<section class="card">
+  <h2 class="step"><span class="num">1</span>Collega la stampante</h2>
+  <button id="btnConnect" class="primary">Cerca e collega la M08F</button>
+  <div class="status"><span id="dot" class="dot"></span><span id="statusTxt">Non collegata</span></div>
+  <p class="help">Accendi la stampante e chiudi l'app ePrinter, altrimenti la stampante resta occupata.</p>
+</section>
+
+<section class="card">
+  <h2 class="step"><span class="num">2</span>Impostazioni</h2>
+
+  <label class="lbl" for="density">Densità (forza di stampa)</label>
+  <div class="density-wrap">
+    <input id="density" type="range" min="1" max="15" step="1" value="8" aria-describedby="densHelp">
+    <span id="densityVal" class="density-val" aria-live="polite">8</span>
+  </div>
+  <p id="densHelp" class="help">1 = chiaro, 15 = scuro.</p>
+
+  <span class="lbl" id="methodLbl">Comando densità</span>
+  <div class="seg" role="radiogroup" aria-labelledby="methodLbl">
+    <input type="radio" name="method" id="mA" value="A" checked><label for="mA">A<br>ePrinter</label>
+    <input type="radio" name="method" id="mB" value="B"><label for="mB">B<br>1B 4E 04</label>
+    <input type="radio" name="method" id="mAB" value="AB"><label for="mAB">Entrambi</label>
+  </div>
+  <p class="help">A è il comando che usa ePrinter per la M08F (1F 11 02 + 1F 11 37). B è una variante Phomemo più vecchia.</p>
+
+  <label class="lbl" for="heat">Calore della testina</label>
+  <select id="heat">
+    <option value="64">Normale (64) – come ePrinter</option>
+    <option value="96">Forte (96) – come ePrinter al massimo</option>
+  </select>
+  <label class="check"><input type="checkbox" id="optMirror" checked> Specchia l'immagine (ePrinter la specchia sempre per i tatuaggi)</label>
+
+  <label class="lbl" for="media">Tipo di carta</label>
+  <select id="media">
+    <option value="0b">Foglio singolo / stencil (0B) – come ePrinter</option>
+    <option value="38">Formato speciale (38)</option>
+    <option value="26">Con tacca nera (26)</option>
+    <option value="0a">Con spazi tra le etichette (0A)</option>
+    <option value="none">Non inviare</option>
+  </select>
+
+  <label class="lbl" for="width">Larghezza di stampa</label>
+  <select id="width">
+    <option value="1728">1728 punti (216 mm, 203 dpi)</option>
+    <option value="1680">1680 punti (210 mm, 203 dpi)</option>
+    <option value="2480">2480 punti (210 mm, 300 dpi)</option>
+  </select>
+</section>
+
+<section class="card">
+  <h2 class="step"><span class="num">3</span>Stampa di prova</h2>
+  <div class="row">
+    <button id="btnStrip" class="primary" disabled>Striscia singola</button>
+    <button id="btnScale" disabled>Scala 1 → 15</button>
+  </div>
+  <p class="help">La striscia è alta circa 3 cm. La scala stampa 15 strisce da 1,5 cm, una per ogni densità.</p>
+  <div class="progress" aria-hidden="true"><div id="bar"></div></div>
+  <canvas id="preview" width="1728" height="240" aria-label="Anteprima della striscia di prova"></canvas>
+</section>
+
+<section class="card">
+  <details>
+    <summary>Avanzate e registro</summary>
+    <label class="check"><input type="checkbox" id="optRaw" checked> Invia 1F 11 35 00 (dati non compressi)</label>
+    <label class="check"><input type="checkbox" id="optInit" checked> Invia ESC @ (reset) all'inizio</label>
+    <label class="check"><input type="checkbox" id="optFeed" checked> Avanza la carta alla fine (1B 64 02)</label>
+    <div class="row">
+      <div><label class="lbl" for="chunk">Pacchetto (byte)</label><input id="chunk" type="number" value="128" min="20" max="512"></div>
+      <div><label class="lbl" for="delay">Pausa (ms)</label><input id="delay" type="number" value="15" min="0" max="200"></div>
+    </div>
+    <label class="lbl" for="hex">Invia byte a mano (esadecimale)</label>
+    <div class="row">
+      <input id="hex" type="text" placeholder="es. 1F 11 11" autocomplete="off" autocapitalize="characters">
+      <button id="btnHex" disabled style="flex:0 0 96px">Invia</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="btnStatus" disabled>Chiedi stato</button>
+      <button id="btnCopy">Copia registro</button>
+    </div>
+    <div id="log" role="log" aria-live="polite"></div>
+  </details>
+</section>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const logEl = $('log');
+  let device = null, writeChar = null, busy = false;
+
+  const OPTIONAL_SERVICES = [
+    0xff00, 0xff10, 0xae30, 0xae00, 0x18f0, 0xfee7, 0xe0ff, 0xffe0,
+    '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+    'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+    '0000ff00-0000-1000-8000-00805f9b34fb'
+  ];
+
+  const hex = (u8) => Array.from(u8, b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
+  function log(msg, cls) {
+    const line = document.createElement('div');
+    if (cls) line.className = cls;
+    line.textContent = new Date().toLocaleTimeString('it-IT') + '  ' + msg;
+    logEl.appendChild(line);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  function setConnected(on, txt) {
+    $('dot').classList.toggle('on', on);
+    $('statusTxt').textContent = txt;
+    ['btnStrip', 'btnScale', 'btnHex', 'btnStatus'].forEach(id => $(id).disabled = !on);
+  }
+
+  if (!navigator.bluetooth) { $('nobt').hidden = false; $('btnConnect').disabled = true; }
+
+  $('density').addEventListener('input', e => { $('densityVal').textContent = e.target.value; drawPreview(); });
+  ['media', 'width', 'heat', 'optMirror'].forEach(id => $(id).addEventListener('change', drawPreview));
+  document.querySelectorAll('input[name=method]').forEach(r => r.addEventListener('change', drawPreview));
+
+  // ---------- Bluetooth ----------
+  $('btnConnect').addEventListener('click', async () => {
+    try {
+      log('Cerco dispositivi…', 'info');
+      device = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: OPTIONAL_SERVICES });
+      device.addEventListener('gattserverdisconnected', () => { setConnected(false, 'Disconnessa'); log('Stampante disconnessa', 'err'); });
+      log('Scelto: ' + (device.name || 'senza nome'), 'info');
+      const server = await device.gatt.connect();
+      const services = await server.getPrimaryServices();
+      let fallback = null;
+      for (const s of services) {
+        log('Servizio ' + s.uuid);
+        let chars = [];
+        try { chars = await s.getCharacteristics(); } catch (e) { continue; }
+        for (const c of chars) {
+          const p = c.properties;
+          const flags = [p.read && 'read', p.write && 'write', p.writeWithoutResponse && 'writeNR', p.notify && 'notify', p.indicate && 'indicate'].filter(Boolean).join(',');
+          log('  · ' + c.uuid + '  [' + flags + ']');
+          if ((p.notify || p.indicate)) {
+            try {
+              await c.startNotifications();
+              c.addEventListener('characteristicvaluechanged', ev => {
+                log('← ' + hex(new Uint8Array(ev.target.value.buffer)), 'in');
+              });
+            } catch (e) { /* ignore */ }
+          }
+          if (p.writeWithoutResponse || p.write) {
+            if (/ff02/i.test(c.uuid) && !writeChar) writeChar = c;
+            if (!fallback) fallback = c;
+          }
+        }
+      }
+      writeChar = writeChar || fallback;
+      if (!writeChar) throw new Error('Nessun canale di scrittura trovato');
+      log('Scrivo su ' + writeChar.uuid, 'info');
+      setConnected(true, 'Collegata: ' + (device.name || 'stampante'));
+    } catch (e) {
+      log('Errore: ' + e.message, 'err');
+      setConnected(false, 'Non collegata');
+    }
+  });
+
+  async function send(bytes, showProgress) {
+    const size = Math.max(20, parseInt($('chunk').value, 10) || 128);
+    const pause = Math.max(0, parseInt($('delay').value, 10) || 0);
+    const noResp = writeChar.properties.writeWithoutResponse;
+    for (let i = 0; i < bytes.length; i += size) {
+      const part = bytes.slice(i, i + size);
+      if (noResp && writeChar.writeValueWithoutResponse) await writeChar.writeValueWithoutResponse(part);
+      else await writeChar.writeValue(part);
+      if (pause) await sleep(pause);
+      if (showProgress) $('bar').style.width = Math.round(((i + part.length) / bytes.length) * 100) + '%';
+    }
+  }
+
+  // ---------- Test image ----------
+  function settings() {
+    return {
+      density: parseInt($('density').value, 10),
+      method: document.querySelector('input[name=method]:checked').value,
+      media: $('media').value,
+      width: parseInt($('width').value, 10),
+      mirror: $('optMirror').checked
+    };
+  }
+
+  function drawStrip(ctx, w, h, s) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+    if (s.mirror) { ctx.translate(w, 0); ctx.scale(-1, 1); }
+    ctx.fillStyle = '#000';
+    const pad = Math.round(w * 0.03);
+    const fs = Math.round(h * 0.32);
+    ctx.font = '700 ' + fs + 'px -apple-system, Helvetica, Arial, sans-serif';
+    ctx.textBaseline = 'middle';
+    const label = 'D ' + s.density + '  ·  ' + s.method + '  ·  carta ' + s.media.toUpperCase();
+    ctx.fillText(label, pad, h * 0.3);
+    // solid block
+    const top = h * 0.55, bh = h * 0.35;
+    ctx.fillRect(pad, top, w * 0.18, bh);
+    // fine lines (1, 2, 3 px)
+    let x = pad + w * 0.22;
+    for (let t = 1; t <= 3; t++) {
+      for (let k = 0; k < 6; k++) { ctx.fillRect(x, top, t, bh); x += t + 6; }
+      x += 20;
+    }
+    // dither ramp
+    const rx = x + 10, rw = w - pad - rx;
+    for (let i = 0; i < rw; i++) {
+      const level = i / rw;
+      for (let j = 0; j < bh; j++) {
+        const bayer = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]][j % 4][i % 4] / 16;
+        if (level > bayer) ctx.fillRect(rx + i, top + j, 1, 1);
+      }
+    }
+  }
+
+  function drawPreview() {
+    const s = settings();
+    const c = $('preview');
+    c.width = s.width; c.height = 240;
+    drawStrip(c.getContext('2d'), c.width, c.height, s);
+  }
+
+  function rasterize(w, h, s) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const ctx = c.getContext('2d');
+    drawStrip(ctx, w, h, s);
+    const px = ctx.getImageData(0, 0, w, h).data;
+    const bpl = Math.ceil(w / 8);
+    const out = new Uint8Array(bpl * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (px[i] < 128) out[y * bpl + (x >> 3)] |= (0x80 >> (x & 7));
+    }
+    return { data: out, bpl };
+  }
+
+  function job(s, lines) {
+    const parts = [];
+    if ($('optInit').checked) parts.push([0x1b, 0x40]);
+    if (s.media !== 'none') parts.push([0x1f, 0x11, parseInt(s.media, 16)]);
+    if (s.method === 'A' || s.method === 'AB') { parts.push([0x1f, 0x11, 0x02, s.density]); parts.push([0x1f, 0x11, 0x37, parseInt($('heat').value, 16)]); }
+    if (s.method === 'B' || s.method === 'AB') parts.push([0x1b, 0x4e, 0x04, s.density]);
+    if ($('optRaw').checked) parts.push([0x1f, 0x11, 0x35, 0x00]);
+    const img = rasterize(s.width, lines, s);
+    parts.push([0x1d, 0x76, 0x30, 0x00, img.bpl & 0xff, img.bpl >> 8, lines & 0xff, lines >> 8]);
+    const head = new Uint8Array(parts.flat());
+    log('→ ' + hex(head) + '  + immagine ' + img.data.length + ' byte', 'info');
+    const all = new Uint8Array(head.length + img.data.length);
+    all.set(head); all.set(img.data, head.length);
+    return all;
+  }
+
+  async function runPrint(list) {
+    if (busy || !writeChar) return;
+    busy = true; $('btnStrip').disabled = $('btnScale').disabled = true;
+    try {
+      for (const { s, lines } of list) {
+        await send(job(s, lines), true);
+        await sleep(150);
+      }
+      if ($('optFeed').checked) { await send(new Uint8Array([0x1b, 0x64, 0x02])); log('→ 1B 64 02', 'info'); }
+      log('Invio completato', 'info');
+    } catch (e) {
+      log('Errore di stampa: ' + e.message, 'err');
+    } finally {
+      busy = false; $('btnStrip').disabled = $('btnScale').disabled = !writeChar;
+      setTimeout(() => $('bar').style.width = '0', 800);
+    }
+  }
+
+  $('btnStrip').addEventListener('click', () => runPrint([{ s: settings(), lines: 240 }]));
+  $('btnScale').addEventListener('click', () => {
+    const base = settings();
+    runPrint(Array.from({ length: 15 }, (_, i) => ({ s: { ...base, density: i + 1 }, lines: 120 })));
+  });
+
+  $('btnHex').addEventListener('click', async () => {
+    const clean = $('hex').value.replace(/[^0-9a-f]/gi, '');
+    if (!clean || clean.length % 2) { log('Esadecimale non valido', 'err'); return; }
+    const bytes = new Uint8Array(clean.match(/../g).map(b => parseInt(b, 16)));
+    try { await send(bytes); log('→ ' + hex(bytes), 'info'); } catch (e) { log('Errore: ' + e.message, 'err'); }
+  });
+  $('btnStatus').addEventListener('click', async () => {
+    try {
+      for (const b of [[0x1f, 0x11, 0x08], [0x1f, 0x11, 0x07], [0x1f, 0x11, 0x09], [0x1f, 0x11, 0x11]]) {
+        await send(new Uint8Array(b)); log('→ ' + hex(b), 'info'); await sleep(200);
+      }
+    } catch (e) { log('Errore: ' + e.message, 'err'); }
+  });
+  $('btnCopy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(logEl.innerText); $('btnCopy').textContent = 'Copiato'; }
+    catch { $('btnCopy').textContent = 'Seleziona e copia a mano'; }
+    setTimeout(() => $('btnCopy').textContent = 'Copia registro', 1500);
+  });
+
+  drawPreview();
+})();
+</script>
+</body>
+</html>
