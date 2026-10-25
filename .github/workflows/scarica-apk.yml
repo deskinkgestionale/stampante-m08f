@@ -20,7 +20,7 @@ jobs:
       - name: Scarica com.quyin.eprinter
         run: |
           mkdir -p out
-          ./apkeep -a com.quyin.eprinter -d apk-pure out || true
+          ./apkeep -a com.quyin.eprinter -d apk-pure -o 'acknowledge_dangers=true' out || true
           ls -la out
           test -n "$(ls -A out)"
       - name: Carica il file (resta 1 giorno)
