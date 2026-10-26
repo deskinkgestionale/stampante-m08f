@@ -121,6 +121,25 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .paper .meta small{color:var(--fg-3);font-size:12.5px;font-variant-numeric:tabular-nums}
 .chip{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--on-gold);background:var(--gold);padding:3px 8px;border-radius:999px}
 
+/* ---------- zones ---------- */
+.zones{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.zone{position:relative;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;min-height:64px;text-align:left;cursor:pointer;color:var(--fg);transition:border-color .18s var(--ease)}
+.zone:hover{border-color:var(--line-strong)}
+.zone[aria-pressed=true]{border-color:var(--gold);background:#1b1913}
+.zone b{display:block;font-size:14px}
+.zone small{display:block;color:var(--fg-3);font-size:12px;font-variant-numeric:tabular-nums}
+.zone .n{color:var(--gold);font-weight:700}
+.zone.add{display:flex;align-items:center;gap:8px;color:var(--fg-2);border-style:dashed}
+/* ---------- archive ---------- */
+.search{position:relative} .search input{padding-left:42px}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--fg-3)}
+.arch{display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.arch + .arch{margin-top:8px}
+.arch img{width:64px;height:80px;object-fit:contain;background:#fff;border-radius:8px;flex:none}
+.arch .meta{flex:1;min-width:0}
+.arch .meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arch .meta small{display:block;color:var(--fg-3);font-size:12.5px}
+.arch .acts{display:flex;gap:6px}
 /* ---------- history ---------- */
 .hist{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .hist button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px;cursor:pointer;text-align:left;color:var(--fg)}
@@ -176,6 +195,10 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M3 21l3.5-1L20 6.5 17.5 4 4 17.5z"/></symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9M10 13h4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h8V3M8 21v-7h8v7"/></symbol>
+  <symbol id="i-body" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2"/><path d="M8 8h8l-1 6h-2l-.5 7h-1L11 14H9z"/></symbol>
   <symbol id="i-test" viewBox="0 0 24 24"><path d="M4 5h16v4H4zM4 11h10v4H4zM4 17h6v3H4z"/></symbol>
 </svg>
 
@@ -199,6 +222,8 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <button class="tile" data-go="papers"><span class="ic"><svg class="ico"><use href="#i-paper"/></svg></span><span><b>Le mie carte</b><small id="homePaper">—</small></span></button>
     <button class="tile" data-go="settings"><span class="ic"><svg class="ico"><use href="#i-test"/></svg></span><span><b>Prova intensità</b><small>Scala da 1 a 15</small></span></button>
   </div>
+
+  <button class="tile" data-go="archive" style="margin-top:12px"><span class="ic"><svg class="ico"><use href="#i-archive"/></svg></span><span><b>Archivio clienti</b><small id="homeArch">Cerca lo stencil di un cliente</small></span></button>
 
   <h2 class="sec">Ultime stampe</h2>
   <div class="hist" id="histList"></div>
@@ -237,19 +262,24 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
       </div>
 
       <div class="panel" id="p-size" role="tabpanel">
+        <label class="l" for="sheetSel">Formato del foglio</label>
+        <select id="sheetSel">
+          <option value="A4">A4 · 210 × 297 mm</option>
+          <option value="LETTER">Lettera · 216 × 279 mm</option>
+          <option value="LEGAL">Legal · 216 × 356 mm</option>
+          <option value="A5">A5 orizzontale · 210 × 148 mm</option>
+          <option value="CUSTOM">Rotolo / lunghezza personalizzata…</option>
+        </select>
+        <div id="customLenWrap" class="hidden"><label class="l" for="customLen">Lunghezza foglio (mm)</label><input id="customLen" type="number" min="40" max="1000" value="250"></div>
+        <h2 class="sec" style="margin-top:18px">Misura per zona del corpo</h2>
+        <div class="zones" id="zones"></div>
+        <p class="help">Tocca una zona: il disegno viene adattato a quella misura e vedi subito quanti fogli servono. Puoi cambiare le misure o aggiungere le tue zone.</p>
+        <h2 class="sec">Misura a mano</h2>
         <div class="row">
           <div><label class="l" for="wMm">Larghezza (mm)</label><input id="wMm" type="number" min="10" max="2000" step="1" value="150" inputmode="decimal"></div>
           <div><label class="l" for="hMm">Altezza (mm)</label><input id="hMm" type="number" min="10" max="3000" step="1" value="150" inputmode="decimal"></div>
         </div>
         <label class="switch" style="margin-top:6px"><span>Blocca proporzioni</span><input type="checkbox" id="lockAR" checked></label>
-        <label class="l" for="sheetSel">Foglio</label>
-        <select id="sheetSel">
-          <option value="A4">A4 · 216 × 292 mm stampabili</option>
-          <option value="A5">A5 · 148 mm di altezza</option>
-          <option value="LETTER">Lettera · 279 mm</option>
-          <option value="CUSTOM">Lunghezza personalizzata…</option>
-        </select>
-        <div id="customLenWrap" class="hidden"><label class="l" for="customLen">Lunghezza foglio (mm)</label><input id="customLen" type="number" min="40" max="1000" value="250"></div>
         <label class="l" for="overlap">Sovrapposizione tra fogli <output id="overlapV">10 mm</output></label>
         <input id="overlap" type="range" min="0" max="30" step="1" value="10">
         <label class="switch"><span>Crocette di allineamento</span><input type="checkbox" id="marks" checked></label>
@@ -259,9 +289,10 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
 
       <div class="panel hidden" id="p-style" role="tabpanel">
         <div class="seg" role="group" aria-label="Stile di stampa" id="modeSeg">
+          <button data-mode="orig" aria-pressed="false">Originale</button>
           <button data-mode="line" aria-pressed="true">Linee</button>
           <button data-mode="thresh" aria-pressed="false">Nero pieno</button>
-          <button data-mode="dither" aria-pressed="false">Sfumato</button>
+          <button data-mode="dither" aria-pressed="false">Puntinato</button>
         </div>
         <div id="lineOpts">
           <label class="l" for="detail">Dettagli <output id="detailV">60</output></label>
@@ -274,6 +305,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
           <input id="fill" type="range" min="0" max="100" value="0">
           <p class="help">Utile per disegni già a linee: alza “Riempi” per tenere i tratti neri così come sono.</p>
         </div>
+        <p class="help hidden" id="origHelp">La foto così com'è, senza effetti. La stampante termica fa solo punti neri, quindi le sfumature vengono rese con punti fitti.</p>
         <div id="threshOpts" class="hidden">
           <label class="l" for="thresh">Soglia del nero <output id="threshV">128</output></label>
           <input id="thresh" type="range" min="10" max="245" value="128">
@@ -299,7 +331,10 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
         <button class="btn ghost" id="autoTrim" style="margin-top:14px">Togli i bordi bianchi</button>
       </div>
 
-      <button class="btn gold" id="toPrint" style="margin-top:20px" disabled><svg class="ico"><use href="#i-printer"/></svg>Vai alla stampa</button>
+      <div class="row" style="margin-top:20px">
+        <button class="btn" id="toSave" disabled><svg class="ico"><use href="#i-save"/></svg>Archivia</button>
+        <button class="btn gold" id="toPrint" disabled><svg class="ico"><use href="#i-printer"/></svg>Stampa</button>
+      </div>
     </div>
   </div>
 </section>
@@ -340,6 +375,19 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <button class="btn ghost hidden" id="btnNext" style="margin-top:12px">Foglio inserito: stampa il prossimo</button>
     <button class="btn danger hidden" id="btnStop" style="margin-top:10px">Interrompi</button>
   </div>
+</section>
+
+<!-- ================= ARCHIVE ================= -->
+<section class="screen" id="s-archive" aria-labelledby="h-archive">
+  <div class="kicker">Clienti</div>
+  <h1 class="title" id="h-archive">Archivio stencil</h1>
+  <p class="lead">Ogni stencil salvato con cliente, zona, misura e impostazioni di stampa. Cercalo e ristampalo identico.</p>
+  <div class="search"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg><label for="archQ" class="sr">Cerca</label><input id="archQ" type="text" placeholder="Cerca cliente, disegno o zona" autocomplete="off"></div>
+  <p class="help" id="archCount" style="margin:10px 0"></p>
+  <div id="archList"></div>
+  <div class="row" style="margin-top:16px"><button class="btn ghost" id="archExport">Backup archivio</button><button class="btn ghost" id="archImport">Ripristina backup</button></div>
+  <input type="file" id="fArchImport" accept="application/json,.json" class="sr" tabindex="-1">
+  <p class="help">L'archivio è salvato su questo dispositivo. Fai un backup ogni tanto e usalo per portare gli stencil su un altro iPhone, iPad o Mac.</p>
 </section>
 
 <!-- ================= PAPERS ================= -->
@@ -397,14 +445,15 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="row" style="margin-top:10px"><button class="btn ghost" id="btnExport">Esporta carte</button><button class="btn ghost" id="btnImport">Importa carte</button></div>
     <input type="file" id="fImport" accept="application/json,.json" class="sr" tabindex="-1">
   </div>
-  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 1.0 · software indipendente, non affiliato al produttore della stampante.</p>
+  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 1.1 · software indipendente, non affiliato al produttore della stampante.</p>
 </section>
 </main>
 
-<nav class="tabbar" aria-label="Navigazione">
+<nav class="tabbar" aria-label="Navigazione" style="grid-template-columns:repeat(5,1fr)">
   <button data-go="home" aria-current="page"><svg class="ico"><use href="#i-home"/></svg>Home</button>
   <button data-go="editor"><svg class="ico"><use href="#i-edit"/></svg>Editor</button>
   <button data-go="print"><svg class="ico"><use href="#i-printer"/></svg>Stampa</button>
+  <button data-go="archive"><svg class="ico"><use href="#i-archive"/></svg>Archivio</button>
   <button data-go="papers"><svg class="ico"><use href="#i-paper"/></svg>Carte</button>
 </nav>
 
@@ -428,6 +477,37 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
   </form>
 </dialog>
 
+<dialog id="dlgZone" aria-labelledby="dlgZoneH">
+  <form method="dialog" id="zoneForm">
+    <div class="dh" id="dlgZoneH">Zona</div>
+    <div class="db">
+      <label class="l" for="zName">Nome</label><input id="zName" type="text" required placeholder="es. Avambraccio esterno" autocomplete="off">
+      <div class="row">
+        <div><label class="l" for="zW">Larghezza max (mm)</label><input id="zW" type="number" min="20" max="2000" value="100" inputmode="numeric"></div>
+        <div><label class="l" for="zH">Altezza max (mm)</label><input id="zH" type="number" min="20" max="3000" value="200" inputmode="numeric"></div>
+      </div>
+      <p class="help">Il disegno viene ingrandito o ridotto finché sta dentro queste misure, senza deformarlo.</p>
+      <div id="zDelWrap"></div>
+    </div>
+    <div class="df"><button class="btn ghost" type="button" id="zCancel">Annulla</button><button class="btn gold" value="ok">Salva</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgSave" aria-labelledby="dlgSaveH">
+  <form method="dialog" id="saveForm">
+    <div class="dh" id="dlgSaveH">Salva in archivio</div>
+    <div class="db">
+      <label class="l" for="svClient">Cliente</label><input id="svClient" type="text" required placeholder="Nome e cognome" autocomplete="off" list="clientList">
+      <datalist id="clientList"></datalist>
+      <label class="l" for="svTitle">Disegno</label><input id="svTitle" type="text" placeholder="es. Leone realistico" autocomplete="off">
+      <label class="l" for="svZone">Zona</label><input id="svZone" type="text" placeholder="es. Avambraccio sinistro" autocomplete="off">
+      <label class="l" for="svNote">Note</label><input id="svNote" type="text" placeholder="es. seduta 1 di 3" autocomplete="off">
+      <p class="help" id="svInfo"></p>
+    </div>
+    <div class="df"><button class="btn ghost" type="button" id="svCancel">Annulla</button><button class="btn gold" value="ok" id="svOk">Salva</button></div>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script>
@@ -436,7 +516,8 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
 const $ = id => document.getElementById(id);
 const DOT_MM = 0.125;               // 203 dpi
 const HEAD = 1728;                  // punti per riga
-const SHEETS = { A4: 2338, A5: 1184, LETTER: 2232 };
+const SHEETS = { // larghezza e lunghezza stampabili in punti (8 punti = 1 mm)
+  A4:{w:1680,h:2338,label:'A4'}, LETTER:{w:1728,h:2192,label:'Lettera'}, LEGAL:{w:1728,h:2808,label:'Legal'}, A5:{w:1680,h:1150,label:'A5'} };
 const store = {
   get(k, d){ try{ const v = localStorage.getItem('ts_'+k); return v==null ? d : JSON.parse(v); }catch{ return d; } },
   set(k, v){ try{ localStorage.setItem('ts_'+k, JSON.stringify(v)); return true; }catch{ return false; } }
@@ -451,8 +532,10 @@ function log(msg, cls){ const d=document.createElement('div'); if(cls) d.classNa
 /* ================= navigation ================= */
 function go(name){
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 's-'+name));
+  document.querySelectorAll('nav.tabbar button').forEach(b => b.toggleAttribute('aria-current', b.dataset.go === name) || b.removeAttribute('aria-current'));
   document.querySelectorAll('nav.tabbar button').forEach(b => { if(b.dataset.go===name) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   if(name==='print') updatePrintSummary();
+  if(name==='archive') renderArchive();
   window.scrollTo({top:0});
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if(b) go(b.dataset.go); });
@@ -559,8 +642,10 @@ const S = {
   bright:0, contrast:0, sharp:0,
   crop:{l:0,r:0,t:0,b:0},
   sheet:'A4', customLen:250, overlap:10, marks:true, sheetNum:true,
-  showGrid:true, flipView:false
+  showGrid:true, flipView:false, zone:null,
+  rec:null // scheda d'archivio aperta (cliente, disegno…)
 };
+const EDIT_KEYS=['rot','wMm','hMm','lock','mode','detail','thick','smooth','fill','thresh','invert','bright','contrast','sharp','crop','sheet','customLen','overlap','marks','sheetNum','zone'];
 const cv = $('cv'), ctx = cv.getContext('2d', { willReadFrequently:true });
 
 function srcDims(){ // dimensioni della sorgente dopo taglio e rotazione (px sorgente)
@@ -570,19 +655,24 @@ function srcDims(){ // dimensioni della sorgente dopo taglio e rotazione (px sor
 }
 function aspect(){ const d=srcDims(); return d.h/d.w; }
 
-function loadFile(file){
+function loadFile(file, restore){
   if(!file) return;
   const url = URL.createObjectURL(file);
   const im = new Image();
   im.onload = () => {
-    S.img=im; S.name=(file.name||'stencil').replace(/\.[^.]+$/,''); S.rot=0; S.crop={l:0,r:0,t:0,b:0};
-    ['cL','cR','cT','cB'].forEach(id=>{ $(id).value=0; $(id+'V').textContent='0%'; });
-    // misura iniziale: larghezza utile del foglio se il disegno è più largo che alto, altrimenti altezza A4
-    const a = aspect();
-    let w = 180; if(w*a > 270) w = Math.round(270/a);
-    setSize(w, null);
+    S.img=im; S.name=(file.name||'stencil').replace(/\.[^.]+$/,'');
+    if(restore){
+      EDIT_KEYS.forEach(k=>{ if(restore.settings && k in restore.settings) S[k]=JSON.parse(JSON.stringify(restore.settings[k])); });
+      S.rec=restore.rec||null; S.name=(restore.rec&&restore.rec.title)||S.name;
+    } else {
+      S.rot=0; S.crop={l:0,r:0,t:0,b:0}; S.zone=null; S.rec=null;
+      const a = aspect();
+      let w = 180; if(w*a > 270) w = Math.round(270/a);
+      S.wMm=w; S.hMm=Math.round(w*a);
+    }
+    syncUI();
     $('stageEmpty').classList.add('hidden'); cv.classList.remove('hidden'); $('sizeBadge').classList.remove('hidden');
-    $('toPrint').disabled=false;
+    $('toPrint').disabled=false; $('toSave').disabled=false;
     go('editor'); render();
   };
   im.onerror = () => toast('Immagine non leggibile');
@@ -596,7 +686,7 @@ $('fCam').onchange = e => { loadFile(e.target.files[0]); e.target.value=''; };
 $('tRot').onclick = () => { if(!S.img) return; S.rot=(S.rot+90)%360; setSize(S.wMm, null); render(); };
 $('tGrid').onclick = e => { S.showGrid=!S.showGrid; e.currentTarget.setAttribute('aria-pressed', S.showGrid); render(); };
 $('tFlipView').onclick = e => { S.flipView=!S.flipView; e.currentTarget.setAttribute('aria-pressed', S.flipView); render(); };
-$('tClear').onclick = () => { S.img=null; cv.classList.add('hidden'); $('stageEmpty').classList.remove('hidden'); $('sizeBadge').classList.add('hidden'); $('toPrint').disabled=true; updatePrintSummary(); };
+$('tClear').onclick = () => { S.img=null; cv.classList.add('hidden'); $('stageEmpty').classList.remove('hidden'); $('sizeBadge').classList.add('hidden'); $('toPrint').disabled=true; $('toSave').disabled=true; S.rec=null; updatePrintSummary(); };
 document.addEventListener('paste', e => { const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/')); if(it) loadFile(it.getAsFile()); });
 $('stage').addEventListener('dragover', e => e.preventDefault());
 $('stage').addEventListener('drop', e => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); });
@@ -608,8 +698,8 @@ function setSize(w, h){
   if(h!=null){ S.hMm = clamp(Math.round(h),10,3000); if(S.lock) S.wMm = Math.round(S.hMm/a); }
   $('wMm').value=S.wMm; $('hMm').value=S.hMm;
 }
-$('wMm').addEventListener('change', e => { setSize(+e.target.value, null); render(); });
-$('hMm').addEventListener('change', e => { setSize(null, +e.target.value); render(); });
+$('wMm').addEventListener('change', e => { S.zone=null; setSize(+e.target.value, null); render(); });
+$('hMm').addEventListener('change', e => { S.zone=null; setSize(null, +e.target.value); render(); });
 $('lockAR').addEventListener('change', e => { S.lock=e.target.checked; if(S.lock) setSize(S.wMm,null); render(); });
 $('sheetSel').addEventListener('change', e => { S.sheet=e.target.value; $('customLenWrap').classList.toggle('hidden', S.sheet!=='CUSTOM'); render(); });
 $('customLen').addEventListener('change', e => { S.customLen=clamp(+e.target.value||250,40,1000); render(); });
@@ -630,6 +720,7 @@ document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#modeSeg button').forEach(x=>x.setAttribute('aria-pressed', x===b));
   $('lineOpts').classList.toggle('hidden', S.mode!=='line');
   $('threshOpts').classList.toggle('hidden', S.mode!=='thresh');
+  $('origHelp').classList.toggle('hidden', S.mode!=='orig');
   render();
 });
 $('resetAdj').onclick = () => { ['bright','contrast','sharp'].forEach(k=>{ S[k]=0; $(k).value=0; $(k+'V').textContent=0; }); render(); };
@@ -679,7 +770,11 @@ function process(W, H, scale){
   // nitidezza (unsharp mask)
   if(S.sharp>0){ const bl=boxBlur(g,W,H,Math.max(1,Math.round(2*scale))), k=S.sharp/40; for(let i=0;i<g.length;i++) g[i]=clamp(g[i]+(g[i]-bl[i])*k,0,255); }
   const out=new Uint8Array(W*H);
-  if(S.mode==='thresh'){
+  if(S.mode==='orig'){ // Floyd–Steinberg: resa fedele della foto
+    const e=Float32Array.from(g);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const i=y*W+x, o=e[i], n=o<128?0:255; out[i]=n?0:1; const er=o-n;
+      if(x+1<W) e[i+1]+=er*7/16; if(y+1<H){ if(x>0) e[i+W-1]+=er*3/16; e[i+W]+=er*5/16; if(x+1<W) e[i+W+1]+=er/16; } }
+  } else if(S.mode==='thresh'){
     for(let i=0;i<g.length;i++) out[i]= g[i]<S.thresh?1:0;
   } else if(S.mode==='dither'){
     const e=Float32Array.from(g);
@@ -710,10 +805,12 @@ function process(W, H, scale){
 }
 
 /* ----- fogli ----- */
-function sheetLines(){ return S.sheet==='CUSTOM' ? Math.round(S.customLen/DOT_MM) : SHEETS[S.sheet]; }
-function layout(){
-  const W=Math.round(S.wMm/DOT_MM), H=Math.round(S.hMm/DOT_MM);
-  const PW=HEAD, PH=sheetLines(), ov=Math.round(S.overlap/DOT_MM);
+function sheetLines(){ return S.sheet==='CUSTOM' ? Math.round(S.customLen/DOT_MM) : SHEETS[S.sheet].h; }
+function sheetWidth(){ return S.sheet==='CUSTOM' ? HEAD : SHEETS[S.sheet].w; }
+function sheetLabel(){ return S.sheet==='CUSTOM' ? 'rotolo '+S.customLen+' mm' : SHEETS[S.sheet].label; }
+function layout(wMm, hMm){
+  const W=Math.round((wMm??S.wMm)/DOT_MM), H=Math.round((hMm??S.hMm)/DOT_MM);
+  const PW=sheetWidth(), PH=sheetLines(), ov=Math.round(S.overlap/DOT_MM);
   // prova entrambi gli orientamenti dei fogli? la testina è fissa a 216 mm: le colonne dipendono dalla larghezza
   const cols = W<=PW ? 1 : Math.ceil((W-ov)/(PW-ov));
   const rows = H<=PH ? 1 : Math.ceil((H-ov)/(PH-ov));
@@ -752,7 +849,8 @@ function render(){
     });
     ctx.restore();
   }
-  $('sizeBadge').textContent = `${S.wMm} × ${S.hMm} mm · ${L.tiles.length} ${L.tiles.length===1?'foglio':'fogli'}`;
+  $('sizeBadge').textContent = `${S.wMm} × ${S.hMm} mm · ${L.tiles.length} ${L.tiles.length===1?'foglio':'fogli'} ${sheetLabel()}`;
+  renderZones();
   $('tileInfo').textContent = L.tiles.length===1
     ? 'Il disegno sta in un solo foglio.'
     : `Il disegno viene diviso in ${L.tiles.length} fogli (${L.cols} × ${L.rows}), con ${S.overlap} mm in comune per riunirli.`;
@@ -861,7 +959,7 @@ function updatePrintSummary(){
   const on = !!writeChar;
   let txt='';
   if(!has) txt='Nessun disegno: prepara prima lo stencil nell\'editor.';
-  else { const L=layout(); txt=`${S.name||'Disegno'} · ${S.wMm} × ${S.hMm} mm · ${L.tiles.length} ${L.tiles.length===1?'foglio':'fogli'} · carta “${p.name}”`; }
+  else { const L=layout(); txt=`${S.name||'Disegno'} · ${S.wMm} × ${S.hMm} mm · ${L.tiles.length} ${L.tiles.length===1?'foglio':'fogli'} ${sheetLabel()} · carta “${p.name}”`; }
   if(has && !on) txt+='\nCollega la stampante dal pulsante in alto.';
   $('printSummary').textContent=txt; $('printSummary').style.whiteSpace='pre-line';
   $('btnPrint').disabled = !(has && on) || busy;
@@ -963,6 +1061,173 @@ $('btnCopy').onclick = async () => { try{ await navigator.clipboard.writeText($(
   el.addEventListener('change', () => store.set('opt_'+id, el.type==='checkbox'?el.checked:el.value));
 });
 
+
+/* ================= sync UI from state ================= */
+function syncUI(){
+  $('wMm').value=S.wMm; $('hMm').value=S.hMm; $('lockAR').checked=S.lock;
+  $('sheetSel').value=S.sheet; $('customLenWrap').classList.toggle('hidden', S.sheet!=='CUSTOM'); $('customLen').value=S.customLen;
+  $('overlap').value=S.overlap; $('overlapV').textContent=S.overlap+' mm';
+  $('marks').checked=S.marks; $('sheetNum').checked=S.sheetNum; $('invert').checked=S.invert;
+  ['detail','thick','smooth','fill','thresh','bright','contrast','sharp'].forEach(k=>{ $(k).value=S[k]; $(k+'V').textContent=S[k]; });
+  [['cL','l'],['cR','r'],['cT','t'],['cB','b']].forEach(([id,k])=>{ $(id).value=S.crop[k]; $(id+'V').textContent=Math.round(S.crop[k])+'%'; });
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.mode===S.mode));
+  $('lineOpts').classList.toggle('hidden', S.mode!=='line');
+  $('threshOpts').classList.toggle('hidden', S.mode!=='thresh');
+  $('origHelp').classList.toggle('hidden', S.mode!=='orig');
+}
+
+/* ================= zone del corpo ================= */
+// Misure massime di partenza (mm), indicative per un adulto: sono modificabili.
+const ZONES_DEFAULT = [
+  { id:'z-polso',   name:'Polso / caviglia',     w:60,  h:70  },
+  { id:'z-mano',    name:'Mano / collo',         w:90,  h:110 },
+  { id:'z-avamb',   name:'Avambraccio',          w:100, h:220 },
+  { id:'z-bicip',   name:'Braccio (bicipite)',   w:130, h:190 },
+  { id:'z-spalla',  name:'Spalla',               w:200, h:220 },
+  { id:'z-mezza',   name:'Mezza manica',         w:280, h:330 },
+  { id:'z-manica',  name:'Manica intera',        w:300, h:620 },
+  { id:'z-petto',   name:'Petto',                w:360, h:250 },
+  { id:'z-fianco',  name:'Fianco / costato',     w:200, h:360 },
+  { id:'z-polp',    name:'Polpaccio',            w:170, h:300 },
+  { id:'z-coscia',  name:'Coscia',               w:260, h:380 },
+  { id:'z-gamba',   name:'Gamba intera',         w:300, h:900 },
+  { id:'z-schiena-a', name:'Schiena alta',       w:400, h:280 },
+  { id:'z-schiena', name:'Schiena completa',     w:420, h:620 }
+];
+let zones = store.get('zones', null); if(!Array.isArray(zones)||!zones.length) zones = ZONES_DEFAULT.map(z=>({...z}));
+const saveZones = () => store.set('zones', zones);
+function fitZone(z){ const a=aspect(); let w=z.w, h=Math.round(w*a); if(h>z.h){ h=z.h; w=Math.round(h/a); } return { w, h }; }
+function renderZones(){
+  const el=$('zones'); el.innerHTML='';
+  zones.forEach(z => {
+    const b=document.createElement('button'); b.className='zone'; b.setAttribute('aria-pressed', S.zone===z.id);
+    let extra='';
+    if(S.img){ const f=fitZone(z), n=layout(f.w,f.h).tiles.length; extra=` · <span class="n">${n} ${n===1?'foglio':'fogli'}</span>`; }
+    b.innerHTML=`<b></b><small>${z.w} × ${z.h} mm${extra}</small>`; b.querySelector('b').textContent=z.name;
+    b.onclick=()=>{ if(!S.img){ toast('Carica prima un disegno'); return; } const f=fitZone(z); S.zone=z.id; S.lock=true; $('lockAR').checked=true; S.wMm=f.w; S.hMm=f.h; $('wMm').value=f.w; $('hMm').value=f.h; render(); toast(`${z.name}: ${f.w} × ${f.h} mm`); };
+    let t; b.addEventListener('pointerdown',()=>{ t=setTimeout(()=>{ t=null; openZone(z); }, 600); });
+    ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,()=>clearTimeout(t)));
+    b.addEventListener('contextmenu', e=>{ e.preventDefault(); openZone(z); });
+    el.appendChild(b);
+  });
+  const add=document.createElement('button'); add.className='zone add'; add.innerHTML='<svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><span>Nuova zona<small>tieni premuto una zona per modificarla</small></span>';
+  add.onclick=()=>openZone(null); el.appendChild(add);
+}
+let editingZone=null;
+function openZone(z){
+  editingZone=z; $('dlgZoneH').textContent=z?'Modifica zona':'Nuova zona';
+  $('zName').value=z?z.name:''; $('zW').value=z?z.w:100; $('zH').value=z?z.h:200;
+  const w=$('zDelWrap'); w.innerHTML='';
+  if(z){ const d=document.createElement('button'); d.type='button'; d.className='btn danger'; d.style.marginTop='14px'; d.textContent='Elimina zona';
+    d.onclick=()=>{ zones=zones.filter(x=>x!==z); if(S.zone===z.id) S.zone=null; saveZones(); renderZones(); $('dlgZone').close(); }; w.appendChild(d);
+    const r=document.createElement('button'); r.type='button'; r.className='btn ghost'; r.style.marginTop='8px'; r.textContent='Ripristina zone di partenza';
+    r.onclick=()=>{ zones=ZONES_DEFAULT.map(x=>({...x})); saveZones(); renderZones(); $('dlgZone').close(); }; w.appendChild(r); }
+  $('dlgZone').showModal();
+}
+$('zCancel').onclick=()=>$('dlgZone').close();
+$('zoneForm').addEventListener('submit', e=>{
+  const name=$('zName').value.trim(); if(!name){ e.preventDefault(); return; }
+  const d={ name, w:clamp(+$('zW').value||100,20,2000), h:clamp(+$('zH').value||200,20,3000) };
+  if(editingZone) Object.assign(editingZone,d); else zones.push({ id:'z'+Date.now(), ...d });
+  saveZones(); renderZones();
+});
+
+/* ================= archivio (IndexedDB) ================= */
+const DB = {
+  db:null,
+  open(){ if(this.db) return Promise.resolve(this.db); return new Promise((res,rej)=>{ let r; try{ r=indexedDB.open('trimarchi-stencil',1); }catch(e){ rej(e); return; }
+    r.onupgradeneeded=()=>{ const os=r.result.createObjectStore('stencils',{keyPath:'id'}); os.createIndex('date','date'); };
+    r.onsuccess=()=>{ this.db=r.result; res(this.db); }; r.onerror=()=>rej(r.error); }); },
+  async tx(mode, fn){ const db=await this.open(); return new Promise((res,rej)=>{ const t=db.transaction('stencils',mode), st=t.objectStore('stencils'); const out=fn(st); t.oncomplete=()=>res(out&&out.result!==undefined?out.result:out); t.onerror=()=>rej(t.error); }); },
+  put(rec){ return this.tx('readwrite', st=>st.put(rec)); },
+  del(id){ return this.tx('readwrite', st=>st.delete(id)); },
+  get(id){ return this.tx('readonly', st=>st.get(id)); },
+  all(){ return this.tx('readonly', st=>st.getAll()); }
+};
+function imageBlob(maxSide){ return new Promise(res=>{ try{ const iw=S.img.naturalWidth, ih=S.img.naturalHeight, sc=Math.min(1,maxSide/Math.max(iw,ih)); const c=document.createElement('canvas'); c.width=Math.round(iw*sc); c.height=Math.round(ih*sc); const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(S.img,0,0,c.width,c.height); c.toBlob(b=>res(b),'image/jpeg',.92); }catch{ res(null); } }); }
+function thumbData(){ const t=document.createElement('canvas'), sc=Math.min(1,240/Math.max(cv.width,cv.height)); t.width=Math.max(1,Math.round(cv.width*sc)); t.height=Math.max(1,Math.round(cv.height*sc)); t.getContext('2d').drawImage(cv,0,0,t.width,t.height); return t.toDataURL('image/jpeg',.75); }
+function currentSettings(){ const o={}; EDIT_KEYS.forEach(k=>o[k]=JSON.parse(JSON.stringify(S[k]))); return o; }
+const zoneName = id => (zones.find(z=>z.id===id)||{}).name || '';
+
+async function openSave(){
+  if(!S.img) return;
+  const r=S.rec||{};
+  $('svClient').value=r.client||''; $('svTitle').value=r.title||S.name||''; $('svZone').value=r.zone||zoneName(S.zone); $('svNote').value=r.note||'';
+  const L=layout(); $('svInfo').textContent=`${S.wMm} × ${S.hMm} mm · ${L.tiles.length} ${L.tiles.length===1?'foglio':'fogli'} ${sheetLabel()} · carta “${paperById(selPaper).name}”`+(r.id?' — aggiorna la scheda esistente':'');
+  try{ const all=await DB.all(); const names=[...new Set(all.map(x=>x.client).filter(Boolean))].sort(); $('clientList').innerHTML=''; names.forEach(n=>{ const o=document.createElement('option'); o.value=n; $('clientList').appendChild(o); }); }catch{}
+  $('dlgSave').showModal(); setTimeout(()=>$('svClient').focus(),50);
+}
+$('toSave').onclick=openSave;
+$('svCancel').onclick=()=>$('dlgSave').close();
+$('saveForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const client=$('svClient').value.trim(); if(!client){ $('svClient').focus(); return; }
+  $('svOk').disabled=true;
+  try{
+    const prev=S.rec&&S.rec.id ? await DB.get(S.rec.id) : null;
+    const p=paperById(selPaper);
+    const rec={ id: prev?prev.id:('s'+Date.now()), client, title:$('svTitle').value.trim(), zone:$('svZone').value.trim(), note:$('svNote').value.trim(),
+      date: prev?prev.date:Date.now(), updated:Date.now(), settings:currentSettings(),
+      print:{ paperId:p.id, paperName:p.name, density:+$('pDensity').value, heat:+$('pHeat').value, mirror:$('mirror').checked },
+      thumb:thumbData(), image: await imageBlob(3000) };
+    await DB.put(rec);
+    S.rec={ id:rec.id, client:rec.client, title:rec.title, zone:rec.zone, note:rec.note }; S.name=rec.title||S.name;
+    $('dlgSave').close(); toast(prev?'Scheda aggiornata':'Salvato nell\'archivio di '+client); renderArchive();
+  }catch(err){ toast('Salvataggio non riuscito'); log('Archivio: '+err.message,'err'); }
+  finally{ $('svOk').disabled=false; }
+});
+
+let archCache=[];
+async function renderArchive(){
+  try{ archCache=await DB.all(); }catch{ archCache=[]; $('archCount').textContent='Archivio non disponibile in questo browser.'; return; }
+  archCache.sort((a,b)=>(b.updated||b.date)-(a.updated||a.date));
+  $('homeArch').textContent = archCache.length ? `${archCache.length} stencil salvati` : 'Cerca lo stencil di un cliente';
+  const q=$('archQ').value.trim().toLowerCase();
+  const list=q ? archCache.filter(r=>[r.client,r.title,r.zone,r.note].join(' ').toLowerCase().includes(q)) : archCache;
+  $('archCount').textContent = archCache.length ? (q?`${list.length} su ${archCache.length}`:`${archCache.length} stencil`) : 'Ancora nessuno stencil salvato. Dall\'editor usa “Salva in archivio”.';
+  const el=$('archList'); el.innerHTML='';
+  list.forEach(r=>{
+    const row=document.createElement('div'); row.className='arch';
+    const img=document.createElement('img'); img.src=r.thumb; img.alt=''; row.appendChild(img);
+    const m=document.createElement('div'); m.className='meta';
+    const b=document.createElement('b'); b.textContent=r.client; m.appendChild(b);
+    const s1=document.createElement('small'); s1.textContent=[r.title,r.zone].filter(Boolean).join(' · ')||'—'; m.appendChild(s1);
+    const s2=document.createElement('small'); s2.textContent=`${r.settings.wMm} × ${r.settings.hMm} mm · ${r.print?.paperName||''} D${r.print?.density??''} · ${new Date(r.updated||r.date).toLocaleDateString('it-IT')}`; m.appendChild(s2);
+    row.appendChild(m);
+    const a=document.createElement('div'); a.className='acts';
+    const op=document.createElement('button'); op.className='iconbtn'; op.setAttribute('aria-label','Apri '+r.client); op.innerHTML='<svg class="ico"><use href="#i-edit"/></svg>'; op.onclick=()=>openRecord(r,'editor');
+    const pr=document.createElement('button'); pr.className='iconbtn'; pr.setAttribute('aria-label','Ristampa '+r.client); pr.innerHTML='<svg class="ico"><use href="#i-printer"/></svg>'; pr.onclick=()=>openRecord(r,'print');
+    const dl=document.createElement('button'); dl.className='iconbtn'; dl.setAttribute('aria-label','Elimina '+r.client); dl.innerHTML='<svg class="ico"><use href="#i-trash"/></svg>';
+    dl.onclick=async()=>{ if(dl.dataset.c!=='1'){ dl.dataset.c='1'; dl.style.color='var(--err)'; toast('Tocca ancora per eliminare'); setTimeout(()=>{dl.dataset.c='';dl.style.color='';},2500); return; } await DB.del(r.id); if(S.rec&&S.rec.id===r.id) S.rec=null; renderArchive(); toast('Eliminato'); };
+    a.append(op,pr,dl); row.appendChild(a); el.appendChild(row);
+  });
+}
+$('archQ').addEventListener('input', ()=>{ clearTimeout(renderArchive._t); renderArchive._t=setTimeout(renderArchive,120); });
+function openRecord(r, dest){
+  if(!r.image){ toast('Immagine mancante'); return; }
+  const f=new File([r.image], (r.title||r.client)+'.jpg', {type:'image/jpeg'});
+  if(r.print){ const p=papers.find(x=>x.id===r.print.paperId); if(p){ selPaper=p.id; savePapers(); refreshPaperUI(); } $('pDensity').value=r.print.density; $('pDensityV').textContent=r.print.density; $('pHeat').value=r.print.heat; $('pHeatV').textContent=r.print.heat; $('mirror').checked=r.print.mirror!==false; }
+  loadFile(f, { settings:r.settings, rec:{ id:r.id, client:r.client, title:r.title, zone:r.zone, note:r.note } });
+  if(dest==='print') setTimeout(()=>go('print'), 250);
+}
+const blobToData = b => new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(b); });
+$('archExport').onclick=async()=>{
+  try{ const all=await DB.all(); if(!all.length){ toast('Archivio vuoto'); return; } toast('Preparo il backup…');
+    const out=[]; for(const r of all){ out.push({ ...r, image: r.image? await blobToData(r.image):null }); }
+    const blob=new Blob([JSON.stringify({ app:'trimarchi-stencil-archivio', v:1, date:Date.now(), stencils:out, papers, zones })],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`archivio-stencil-${new Date().toISOString().slice(0,10)}.json`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }catch(e){ toast('Backup non riuscito'); }
+};
+$('archImport').onclick=()=>$('fArchImport').click();
+$('fArchImport').onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{ const d=JSON.parse(await f.text()); if(!Array.isArray(d.stencils)) throw 0; let n=0;
+    for(const r of d.stencils){ if(!r||!r.id||!r.client) continue; const img=r.image? await (await fetch(r.image)).blob() : null; await DB.put({ ...r, image:img }); n++; }
+    toast(`${n} stencil ripristinati`); renderArchive();
+  }catch{ toast('File di backup non valido'); }
+  e.target.value='';
+};
+
 /* ================= history ================= */
 function saveHistory(){
   try{
@@ -991,6 +1256,8 @@ function renderHistory(){
 /* ================= init ================= */
 refreshPaperUI();
 renderHistory();
+renderZones();
+renderArchive();
 setConn('off','Collega');
 })();
 </script>

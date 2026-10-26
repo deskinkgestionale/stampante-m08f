@@ -1,6 +1,7 @@
 # Trimarchi Stencil – app per AIMO M08F
 
-**File dell'app:** `trimarchi-stencil.html` (versione 1.0, 26 ottobre 2026)
+**File dell'app:** `trimarchi-stencil.html` (versione 1.1, 26 ottobre 2026)
+**Link:** https://deskinkgestionale.github.io/stampante-m08f/ (su iPhone/iPad aprirlo in Bluefy)
 
 ## Come aprirla
 - **Mac:** apri il file con Google Chrome (Safari non ha il Bluetooth per le pagine web).
@@ -10,7 +11,10 @@
 ## Cosa fa
 - Carica disegno da galleria, file, fotocamera (o incolla / trascina sul Mac)
 - Misure in mm con proporzioni bloccate, rotazione, taglio, "togli bordi bianchi"
-- Stile: Linee (stencil dai contorni), Nero pieno (soglia), Sfumato (puntinato)
+- Stile: Originale (foto senza effetti), Linee (stencil dai contorni), Nero pieno (soglia), Puntinato
+- Formati: A4, Lettera, Legal, A5, rotolo a lunghezza libera
+- Misure per zona del corpo (polso, avambraccio, manica, gamba, schiena…) con numero di fogli calcolato; zone modificabili e personalizzabili
+- **Archivio clienti:** salva lo stencil con cliente, disegno, zona, misura e impostazioni; ricerca; riapri o ristampa identico; backup/ripristino
 - Luminosità, contrasto, nitidezza, inverti
 - Disegni più grandi del foglio divisi in più fogli, con sovrapposizione, crocette e numero del foglio; stampa foglio per foglio
 - **Le mie carte:** ogni marca con la sua densità (1–15) e calore, sempre modificabili
@@ -30,3 +34,4 @@ L'app è scritta da zero: codice, testi e grafica sono nuovi. Dall'analisi di eP
 ## Cronologia
 - 25/10: analisi del protocollo, pagina di test
 - 26/10: versione 1.0 completa dell'app
+- 26/10: versione 1.1 – originale, formati A4/Lettera/Legal, zone del corpo, archivio clienti
