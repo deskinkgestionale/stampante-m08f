@@ -245,7 +245,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
 
 <!-- ================= HOME ================= -->
 <section class="screen active" id="s-home" aria-labelledby="h-home">
-  <div class="kicker">AIMO M08F · 216 mm</div>
+  <div class="kicker" id="homeModel">AIMO T08FS</div>
   <h1 class="title" id="h-home">Stencil</h1>
   <p class="lead">Metti il disegno sul foglio, sistemalo con le dita e stampa con la forza giusta per la tua carta.</p>
   <button class="tile hero" id="homeNew"><span class="ic"><svg class="ico"><use href="#i-image"/></svg></span><span><b>Nuovo stencil</b><small>Dalla galleria, dai file o dalla fotocamera</small></span></button>
@@ -305,13 +305,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="panel" id="p-sheet" role="tabpanel">
       <div class="row">
         <div><label class="l" for="sheetSel">Formato</label>
-        <select id="sheetSel">
-          <option value="A4">A4 · 210 × 297 mm</option>
-          <option value="LETTER">Lettera · 216 × 279 mm</option>
-          <option value="LEGAL">Legal · 216 × 356 mm</option>
-          <option value="A5">A5 orizzontale · 210 × 148 mm</option>
-          <option value="CUSTOM">Rotolo · lunghezza a scelta</option>
-        </select></div>
+        <select id="sheetSel"></select></div>
         <div id="customLenWrap" class="hidden" style="flex:0 0 120px"><label class="l" for="customLen">Lunghezza mm</label><input id="customLen" type="number" min="40" max="1000" value="300" inputmode="numeric"></div>
       </div>
       <label class="l">Fogli per zona del corpo</label>
@@ -492,6 +486,12 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <button class="btn" id="btnHeatScale" disabled style="margin-top:10px">Scala calore (densità fissa)</button>
   </div>
   <div class="card">
+    <b>Stampante</b>
+    <label class="l" for="modelSel">Modello</label>
+    <select id="modelSel"><option value="T08FS">AIMO T08FS</option><option value="M08F">AIMO M08F</option></select>
+    <p class="help">Cambia i formati e l'area stampabile. La T08FS stampa fino a 200 mm di larghezza in modalità tatuaggio.</p>
+  </div>
+  <div class="card">
     <b>Comunicazione</b>
     <label class="l" for="cmdVariant">Comando densità</label>
     <select id="cmdVariant"><option value="A">1F 11 02 + 1F 11 37 (consigliato)</option><option value="B">1B 4E 04 (variante Phomemo)</option><option value="AB">Entrambi</option></select>
@@ -502,7 +502,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <label class="l" for="block">Righe per blocco immagine</label><input id="block" type="number" value="255" min="16" max="4000">
     <label class="l" for="awMethod">Anti-pieghe: come farlo</label>
     <select id="awMethod"><option value="cmd">Comando alla stampante (come ePrinter)</option><option value="lines">Righe disegnate dall'app</option><option value="both">Entrambi</option></select>
-    <p class="help">Se attivando l'anti-pieghe non vedi le righe ai lati, scegli “Righe disegnate dall'app”.</p>
+    <p class="help">La T08FS lo fa da sola col comando. Se non vedi le righe ai lati, scegli “Righe disegnate dall'app”.</p>
     <label class="switch" style="margin-top:6px"><span>Reset (ESC @) all'inizio</span><input type="checkbox" id="optInit" checked></label>
     <label class="switch"><span>Avanza la carta alla fine</span><input type="checkbox" id="optFeed" checked></label>
     <label class="l" for="hex">Invia byte a mano (esadecimale)</label>
@@ -516,7 +516,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="btnExport">Esporta carte</button><button class="btn ghost sm" id="btnImport">Importa carte</button></div>
     <input type="file" id="fImport" accept="application/json,.json" class="sr" tabindex="-1">
   </div>
-  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.2 · software indipendente, non affiliato al produttore della stampante.</p>
+  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.3 · software indipendente, non affiliato al produttore della stampante.</p>
 </section>
 </main>
 
@@ -586,7 +586,22 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
 const $ = id => document.getElementById(id);
 const DPM = 8;                 // punti per mm (203 dpi)
 const HEAD = 1728;             // punti per riga della testina
-const SHEETS = { A4:{w:1680,h:2338,label:'A4'}, LETTER:{w:1728,h:2192,label:'Lettera'}, LEGAL:{w:1728,h:2808,label:'Legal'}, A5:{w:1680,h:1150,label:'A5'} };
+// profili stampante: area stampabile in mm, righe totali del foglio e margine in alto (righe)
+const MODELS = {
+  T08FS:{ name:'AIMO T08FS', sheets:{
+    A4:{w:200,h:248,total:2360,top:80,label:'A4',opt:'A4 · area 200 × 248 mm'},
+    LETTER:{w:200,h:248,total:2360,top:80,label:'Lettera',opt:'Lettera · area 200 × 248 mm'},
+    LEGAL:{w:200,h:330,total:2784,top:80,label:'Legal',opt:'Legal · area 200 × 330 mm'},
+    BACK:{w:200,h:380,total:3360,top:80,label:'Schiena',opt:'Foglio schiena 216 × 410 · area 200 × 380 mm'},
+    A5:{w:138,h:184,total:2360,top:80,label:'A5',opt:'A5 · area 138 × 184 mm'} } },
+  M08F:{ name:'AIMO M08F', sheets:{
+    A4:{w:210,h:292,total:0,top:0,label:'A4',opt:'A4 · 210 × 292 mm'},
+    LETTER:{w:216,h:274,total:0,top:0,label:'Lettera',opt:'Lettera · 216 × 274 mm'},
+    LEGAL:{w:216,h:351,total:0,top:0,label:'Legal',opt:'Legal · 216 × 351 mm'},
+    A5:{w:210,h:144,total:0,top:0,label:'A5',opt:'A5 orizzontale · 210 × 144 mm'} } }
+};
+let MODEL = (()=>{ try{ const v=JSON.parse(localStorage.getItem('ts_model')); return MODELS[v]?v:'T08FS'; }catch{ return 'T08FS'; } })();
+const SHEETS = new Proxy({}, { get:(t,k)=>MODELS[MODEL].sheets[k] || MODELS[MODEL].sheets.A4 });
 const MAX_ITEMS = 9;
 const store = {
   get(k,d){ try{ const v=localStorage.getItem('ts_'+k); return v==null?d:JSON.parse(v); }catch{ return d; } },
@@ -612,6 +627,11 @@ function go(name){
   window.scrollTo({top:0});
 }
 document.addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) go(b.dataset.go); });
+function fillSheetSel(){ const sel=document.getElementById('sheetSel'); if(!sel) return; const cur=sel.value; sel.innerHTML='';
+  Object.entries(MODELS[MODEL].sheets).forEach(([k,v])=>{ const o=document.createElement('option'); o.value=k; o.textContent=v.opt; sel.appendChild(o); });
+  const o=document.createElement('option'); o.value='CUSTOM'; o.textContent='Rotolo · lunghezza a scelta'; sel.appendChild(o);
+  sel.value=MODELS[MODEL].sheets[cur]||cur==='CUSTOM'?cur:'A4'; }
+fillSheetSel();
 let activePanel='p-sheet';
 document.querySelectorAll('.ed-tabs button').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
 function showPanel(id){
@@ -686,8 +706,8 @@ $('fImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return;
 /* ================= progetto: fogli + elementi ================= */
 const P = { sheet:'A4', customLen:300, cols:1, rows:1, overlap:0, marks:true, sheetNum:true, autoFit:true, items:[], sel:null, rec:null };
 const STYLE_DEFAULT = { mode:'line', detail:60, thick:1, smooth:1, fill:0, thresh:128, invert:false, bright:0, contrast:0, sharp:0, opacity:100, crop:{l:0,r:0,t:0,b:0} };
-const sheetWmm=()=> (P.sheet==='CUSTOM'?HEAD:SHEETS[P.sheet].w)/DPM;
-const sheetHmm=()=> P.sheet==='CUSTOM'?P.customLen:SHEETS[P.sheet].h/DPM;
+const sheetWmm=()=> P.sheet==='CUSTOM'?HEAD/DPM:SHEETS[P.sheet].w;
+const sheetHmm=()=> P.sheet==='CUSTOM'?P.customLen:SHEETS[P.sheet].h;
 const sheetLabel=()=> P.sheet==='CUSTOM'?`rotolo ${P.customLen} mm`:SHEETS[P.sheet].label;
 function gridSize(){ const w=sheetWmm(), h=sheetHmm(), o=P.overlap; return { w, h, GW: w+(P.cols-1)*(w-o), GH: h+(P.rows-1)*(h-o) }; }
 function sheetRects(){ const g=gridSize(), o=P.overlap, r=[]; for(let y=0;y<P.rows;y++) for(let x=0;x<P.cols;x++) r.push({ c:x, r:y, x:x*(g.w-o), y:y*(g.h-o), w:g.w, h:g.h, n:r.length+1 }); return r; }
@@ -1197,10 +1217,14 @@ async function printJob(){
     for(let cp=0;cp<copies;cp++) for(const j of jobs){
       const el=prevEls.find(e=>+e.dataset.n===j.r.n); prevEls.forEach(e=>e.classList.remove('now')); if(el) el.classList.add('now');
       $('btnPrintTxt').textContent=`Stampo foglio ${idx+1} di ${total}`;
-      const {W}=j.s; let H=j.s.H; const bits=j.s.bits.slice();
+      const {W}=j.s; let H=j.s.H; let bits=j.s.bits.slice();
       if(P.marks && rects.length>1) addMarks(bits,W,H);
-      if(!(P.marks&&rects.length>1) && !(awLevel()&&$('awMethod').value!=='cmd')) H=Math.min(H, j.s.lastRow+1+16); // toglie il bianco in fondo
+      const shp=P.sheet==='CUSTOM'?null:SHEETS[P.sheet];
+      if(!(shp&&shp.total) && !(P.marks&&rects.length>1) && !(awLevel()&&$('awMethod').value!=='cmd')) H=Math.min(H, j.s.lastRow+1+16); // toglie il bianco in fondo
       addAntiWrinkle(bits,W,H);
+      // margine in alto e lunghezza totale del foglio come fa ePrinter (la carta esce tutta)
+      const sh=P.sheet==='CUSTOM'?{top:0,total:0}:SHEETS[P.sheet];
+      if(sh.top||sh.total){ const top=sh.top||0, tot=Math.max(H+top, sh.total||0), nb=new Uint8Array(W*tot); nb.set(bits.subarray(0,W*H), W*top); bits=nb; H=tot; }
       const pk=packBitmap(bits,W,H,mirror);
       if(P.sheetNum && rects.length>1){ const nb=numberBitmap(j.r.n+'/'+rects.length), oy=H-nb.h-24, ox=HEAD-pk.off-nb.w-60;
         for(let y=0;y<nb.h;y++) for(let x=0;x<nb.w;x++) if(nb.b[y*nb.w+x]){ const X=ox+x, Y=oy+y; if(Y>=0&&Y<H&&X>=0&&X<HEAD) pk.data[Y*pk.bpl+(X>>3)]|=0x80>>(X&7); } }
@@ -1224,6 +1248,8 @@ $('toPrint').onclick=()=>go('print');
 
 document.querySelectorAll('#awSeg button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#awSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b)); store.set('aw',+b.dataset.aw); });
 { const v=store.get('aw',0); document.querySelectorAll('#awSeg button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.aw===v)); }
+$('modelSel').value=MODEL; $('homeModel').textContent=MODELS[MODEL].name+' · stencil';
+$('modelSel').onchange=e=>{ MODEL=e.target.value; store.set('model',MODEL); $('homeModel').textContent=MODELS[MODEL].name+' · stencil'; fillSheetSel(); if(P.sheet!=='CUSTOM'&&!MODELS[MODEL].sheets[P.sheet]) P.sheet='A4'; $('sheetSel').value=P.sheet; if(P.autoFit&&P.items.length) fitItemsToGrid(); resizeWs(); markDirty(); toast('Stampante: '+MODELS[MODEL].name); };
 /* ----- prove ----- */
 function testStrip(label,lines){ const c=document.createElement('canvas'); c.width=HEAD; c.height=lines; const x=c.getContext('2d');
   x.fillStyle='#fff'; x.fillRect(0,0,HEAD,lines); x.fillStyle='#000'; x.font=`700 ${Math.round(lines*.42)}px Archivo,Arial,sans-serif`; x.textBaseline='middle'; x.fillText(label,60,lines*.5);
@@ -1261,10 +1287,11 @@ async function loadProject(rec){
   if(!pj && rec.settings){ // schede della versione 1.1
     const s=rec.settings; pj={ sheet:s.sheet||'A4', customLen:s.customLen||300, cols:1, rows:1, overlap:s.overlap||0, marks:s.marks!==false, sheetNum:s.sheetNum!==false,
       items:[{ id:uid(), type:'img', w:s.wMm, h:s.hMm, angle:s.rot||0, flip:false, lock:true, name:rec.title, image:rec.image, style:{ ...STYLE_DEFAULT, ...Object.fromEntries(['mode','detail','thick','smooth','fill','thresh','invert','bright','contrast','sharp','crop'].filter(k=>k in s).map(k=>[k,s[k]])) } }] };
-    const W=(pj.sheet==='CUSTOM'?HEAD:SHEETS[pj.sheet].w)/DPM, H=pj.sheet==='CUSTOM'?pj.customLen:SHEETS[pj.sheet].h/DPM, it=pj.items[0];
+    const W=pj.sheet==='CUSTOM'?HEAD/DPM:SHEETS[pj.sheet].w, H=pj.sheet==='CUSTOM'?pj.customLen:SHEETS[pj.sheet].h, it=pj.items[0];
     const bw=(it.angle%180)?it.h:it.w, bh=(it.angle%180)?it.w:it.h; pj.cols=Math.max(1,Math.ceil(bw/W)); pj.rows=Math.max(1,Math.ceil(bh/H));
     it.cx=(W*pj.cols)/2; it.cy=(H*pj.rows)/2;
   }
+  if(pj.sheet!=='CUSTOM' && !MODELS[MODEL].sheets[pj.sheet]) pj.sheet='A4';
   Object.assign(P,{ sheet:pj.sheet, customLen:pj.customLen||300, cols:pj.cols, rows:pj.rows, overlap:pj.overlap||0, marks:pj.marks!==false, sheetNum:pj.sheetNum!==false });
   P.items=[]; P.sel=null;
   for(const o of pj.items){
@@ -1299,7 +1326,7 @@ $('saveForm').addEventListener('submit',async e=>{ e.preventDefault();
     await DB.put(rec); P.rec={ id:rec.id, client, title:rec.title, zone:rec.zone, note:rec.note }; P.title=rec.title||P.title; $('edKicker').textContent='Cliente · '+client;
     $('dlgSave').close(); toast(prev?'Scheda aggiornata':'Salvato nell\'archivio di '+client); renderArchive();
   }catch(err){ toast('Salvataggio non riuscito'); log('Archivio: '+err.message,'err'); } finally{ $('svOk').disabled=false; } });
-const recSize=r=>{ if(r.project){ const pj=r.project; return `${pj.cols*pj.rows===1?'1 foglio':pj.cols+'×'+pj.rows+' fogli'} ${(SHEETS[pj.sheet]||{label:'rotolo'}).label}`; } return r.settings?`${r.settings.wMm} × ${r.settings.hMm} mm`:''; };
+const recSize=r=>{ if(r.project){ const pj=r.project; return `${pj.cols*pj.rows===1?'1 foglio':pj.cols+'×'+pj.rows+' fogli'} ${pj.sheet==='CUSTOM'?'rotolo':SHEETS[pj.sheet].label}`; } return r.settings?`${r.settings.wMm} × ${r.settings.hMm} mm`:''; };
 async function renderArchive(){
   let all=[]; try{ all=await DB.all(); }catch{ $('archCount').textContent='Archivio non disponibile in questo browser.'; return; }
   all.sort((a,b)=>(b.updated||b.date)-(a.updated||a.date));

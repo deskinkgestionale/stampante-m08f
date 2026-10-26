@@ -34,3 +34,10 @@ Quantità, formato carta, marca della carta (lista dai loro server), densità (P
 
 ## Archivio
 Ogni lavoro salvato con nome, tipo e formato carta, griglia, misura.
+
+## Modello T08FS (la stampante di Giovanni)
+- Testina 216 mm, 203 dpi (1728 punti), come la M08F
+- Modalità tatuaggio, area stampabile: A4 e Lettera 200 × 248 mm; Legal 200 × 330; foglio "BackCanvas" (schiena, 216 × 410) 200 × 380; A5 138 × 184
+- Prima dell'immagine 80 righe bianche (10 mm); poi il foglio viene completato a 2360 righe (A4/Lettera/A5), 2784 (Legal), 3360 (schiena)
+- Anti-pieghe supportato (comando 1F 11 88), predefinito Spento
+- Tipo carta: 1F 11 0B (foglio singolo); l'immagine viene specchiata per il tatuaggio

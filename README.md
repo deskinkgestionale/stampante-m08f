@@ -1,6 +1,7 @@
-# Trimarchi Stencil – app per AIMO M08F
+# Trimarchi Stencil – app per AIMO T08FS (e M08F)
 
-**File dell'app:** `trimarchi-stencil.html` (versione 2.2, 26 ottobre 2026)
+**File dell'app:** `trimarchi-stencil.html` (versione 2.3, 26 ottobre 2026)
+**Stampante di Giovanni:** AIMO **T08FS** (impostata di default; la M08F si sceglie in Prova e avanzate → Stampante)
 **Link:** https://deskinkgestionale.github.io/stampante-m08f/ (su iPhone/iPad aprirlo in Bluefy)
 
 ## Come aprirla
@@ -14,6 +15,7 @@
 - Fino a 9 elementi: immagini e scritte con font da tatuaggio
 - **Fogli per zona del corpo** come ePrinter: 1×2 braccia, 2×1 petto, 2×2 schiena, 3×2 petto, 2×3 gambe, 3×3 petto e schiena, oppure griglia a scelta
 - Anteprima di ogni foglio prima di stampare; i fogli vuoti vengono saltati
+- **Formati T08FS come ePrinter**: A4 e Lettera area 200 × 248 mm, Legal 200 × 330, foglio schiena (216 × 410) 200 × 380, A5 138 × 184; 10 mm di margine in alto e uscita completa del foglio
 - **Editor a tutto schermo**: il foglio resta sempre visibile mentre usi i comandi (Fogli, Misure, Regola, Stile, Taglia, Scritta); su iPad orizzontale i comandi stanno di lato
 - **Regola**: luminosità, contrasto, opacità, nitidezza, con anteprima immediata sul foglio
 - **Taglia** con anteprima: sul foglio vedi in trasparenza la parte che togli
@@ -52,3 +54,4 @@ L'app è scritta da zero: codice, testi e grafica sono nuovi. Dall'analisi di eP
 - 26/10: versione 2.0 – nuovo editor con foglio, gesti con le dita, griglie di fogli come ePrinter
 - 26/10: versione 2.1 – anteprima a grandezza reale (scala 1:1) con calibrazione
 - 26/10: versione 2.2 – editor ottimizzato per telefono e iPad, opacità, taglio visibile, anti-pieghe
+- 26/10: versione 2.3 – profilo stampante T08FS (formati, area stampabile, margini, anti-pieghe supportato)
