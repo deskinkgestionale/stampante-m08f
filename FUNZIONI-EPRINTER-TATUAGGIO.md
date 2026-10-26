@@ -27,5 +27,10 @@ In stampa: linee guida per unire i fogli; stampa foglio per foglio.
 ## Impostazioni di stampa
 Quantità, formato carta, marca della carta (lista dai loro server), densità (Più chiaro / Consigliato / Più intenso), anti-pieghe, modalità di stampa.
 
+## Anti-pieghe (anti rughe)
+- Opzioni: Spento / Leggero / Forte (predefinito in ePrinter: Forte)
+- È un comando inviato alla stampante a inizio lavoro: `1F 11 88 nn` con nn = 01 leggero, 02 forte, 03 spento; la stampante aggiunge righe sottili ai lati del foglio
+- Ordine dei comandi a inizio lavoro: reset, densità, tipo carta, compressione, anti-pieghe, poi l'immagine
+
 ## Archivio
 Ogni lavoro salvato con nome, tipo e formato carta, griglia, misura.

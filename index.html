@@ -92,29 +92,45 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .switch input:checked{background:var(--gold)} .switch input:checked::after{transform:translateX(20px);background:var(--on-gold)}
 .row{display:flex;gap:10px;align-items:flex-end} .row>*{flex:1}
 
-/* ---------- workspace ---------- */
-.ws-wrap{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--ws)}
-#ws{display:block;width:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+/* ---------- editor a tutto schermo ---------- */
+#s-editor.active{position:fixed;left:0;right:0;top:var(--hdr-h,64px);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));padding:8px 12px 0;z-index:5;animation:none}
+.ed{height:100%;display:flex;flex-direction:column;gap:8px;max-width:1400px;margin:0 auto}
+.ed-top{display:flex;align-items:center;gap:8px}
+.ed-top .ed-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ws-wrap{position:relative;flex:1 1 auto;min-height:180px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--ws)}
+#ws{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
 #ws.dragging{cursor:grabbing}
 .ws-empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
 .ws-empty div{background:rgba(11,11,12,.8);color:var(--fg-2);padding:10px 16px;border-radius:12px;font-size:14px;text-align:center}
-.badge{position:absolute;top:10px;left:10px;background:rgba(11,11,12,.85);color:var(--fg);font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;pointer-events:none;font-variant-numeric:tabular-nums}
-.badge2{left:auto;right:10px}
-.tools{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-.tools .iconbtn{flex:none}
+.badge{position:absolute;top:8px;left:8px;background:rgba(11,11,12,.85);color:var(--fg);font-size:12px;font-weight:600;padding:5px 9px;border-radius:999px;pointer-events:none;font-variant-numeric:tabular-nums}
+.badge2{left:auto;right:8px}
+.ed-side{display:flex;flex-direction:column;gap:6px;min-height:0;flex:0 0 auto}
+.tools{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:none}
+.tools::-webkit-scrollbar{display:none}
+.tools .iconbtn{flex:none;min-width:44px;min-height:44px}
+.tools .iconbtn.add{background:var(--gold);color:var(--on-gold);border-color:var(--gold)}
 .tools .sep{width:1px;background:var(--line);flex:none;margin:6px 2px}
-.tabs-inner{display:flex;gap:4px;margin-top:14px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
-.tabs-inner button{min-height:44px;padding:0 13px;border:0;background:transparent;color:var(--fg-3);font-weight:600;font-size:14px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
-.tabs-inner button[aria-selected=true]{color:var(--fg);border-color:var(--gold)}
-.panel{padding-top:6px}
-.noitem{color:var(--fg-3);font-size:14px;padding:14px 0}
-@media(min-width:1000px){
-  .editor-wrap{display:grid;grid-template-columns:1.35fr 1fr;gap:22px;align-items:start}
-  .editor-wrap .ws-col{position:sticky;top:84px}
+.ed-tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;border-bottom:1px solid var(--line);flex:none}
+.ed-tabs button{min-height:50px;border:0;background:transparent;color:var(--fg-3);font-weight:600;font-size:11.5px;border-bottom:2px solid transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0}
+.ed-tabs .ico{width:19px;height:19px}
+.ed-tabs button[aria-selected=true]{color:var(--gold);border-color:var(--gold)}
+.ed-panels{overflow-y:auto;max-height:34vh;padding:0 2px 12px;-webkit-overflow-scrolling:touch}
+.ed-panels label.l{margin:10px 0 2px;font-size:13.5px}
+.ed-panels .switch{min-height:44px;font-size:14.5px}
+.ed-panels input[type=range]{height:32px}
+.ed-panels input[type=text],.ed-panels input[type=number],.ed-panels select{min-height:44px}
+.panel{padding-top:2px}
+.noitem{color:var(--fg-3);font-size:14px;padding:12px 0}
+@media(min-width:900px) and (min-aspect-ratio:1/1){
+  .ed{display:grid;grid-template-columns:minmax(0,1fr) 380px;grid-template-rows:auto minmax(0,1fr);gap:8px 16px}
+  .ed-top{grid-column:1 / -1}
+  .ws-wrap{grid-column:1;grid-row:2;min-height:0}
+  .ed-side{grid-column:2;grid-row:2;min-height:0}
+  .ed-panels{max-height:none;flex:1 1 auto}
 }
-
-.grids{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}
-.gridbtn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 8px;cursor:pointer;color:var(--fg);display:flex;flex-direction:column;align-items:center;gap:6px;min-height:96px}
+@media(max-height:560px){ .ed-panels{max-height:30vh} }
+.grids{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px}
+.gridbtn{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 6px;cursor:pointer;color:var(--fg);display:flex;flex-direction:column;align-items:center;gap:4px;min-height:84px}
 .gridbtn[aria-pressed=true]{border-color:var(--gold);background:#1b1913}
 .gridbtn svg{width:44px;height:40px}
 .gridbtn b{font-size:13px}
@@ -211,6 +227,10 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h8V3M8 21v-7h8v7"/></symbol>
   <symbol id="i-ruler" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="1.5"/><path d="M6 7v4M10 7v3M14 7v4M18 7v3"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1"/><rect x="13" y="3" width="8" height="10" rx="1"/><rect x="3" y="15" width="8" height="6" rx="1"/><rect x="13" y="15" width="8" height="6" rx="1"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-brush" viewBox="0 0 24 24"><path d="M18 3l3 3-9 9-3-3z"/><path d="M9 12c-3 0-5 2-5 5 0 1.5-1 2.5-2 3 4 1 9 0 9-5"/></symbol>
+  <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v16h16"/><path d="M2 6h16v16"/></symbol>
   <symbol id="i-new" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M12 10v6M9 13h6"/></symbol>
 </svg>
 
@@ -241,164 +261,162 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
 
 <!-- ================= EDITOR ================= -->
 <section class="screen" id="s-editor" aria-labelledby="h-editor">
-  <div class="kicker" id="edKicker">Editor</div>
-  <h1 class="title" id="h-editor">Foglio</h1>
-  <div class="editor-wrap">
-    <div class="ws-col">
-      <div class="ws-wrap" id="wsWrap">
-        <canvas id="ws" tabindex="0" aria-label="Foglio di lavoro: trascina per spostare, due dita per ingrandire e ruotare"></canvas>
-        <div class="ws-empty" id="wsEmpty"><div>Tocca <b>Immagine</b> per mettere un disegno sul foglio</div></div>
-        <span class="badge" id="gridBadge"></span>
-        <span class="badge badge2 hidden" id="selBadge"></span>
-      </div>
-      <div class="tools" role="toolbar" aria-label="Strumenti">
-        <button class="iconbtn" id="tPick" aria-label="Aggiungi immagine" title="Immagine"><svg class="ico"><use href="#i-image"/></svg></button>
-        <button class="iconbtn" id="tCam" aria-label="Scatta foto" title="Fotocamera"><svg class="ico"><use href="#i-camera"/></svg></button>
-        <button class="iconbtn" id="tText" aria-label="Aggiungi scritta" title="Scritta"><svg class="ico"><use href="#i-text"/></svg></button>
-        <span class="sep" aria-hidden="true"></span>
-        <button class="iconbtn sel-only" id="tRotL" aria-label="Ruota a sinistra di 90 gradi"><svg class="ico"><use href="#i-rotl"/></svg></button>
-        <button class="iconbtn sel-only" id="tRotR" aria-label="Ruota a destra di 90 gradi"><svg class="ico"><use href="#i-rotr"/></svg></button>
-        <button class="iconbtn sel-only" id="tFlip" aria-label="Specchia"><svg class="ico"><use href="#i-flip"/></svg></button>
-        <button class="iconbtn sel-only" id="tCenter" aria-label="Centra sul foglio"><svg class="ico"><use href="#i-center"/></svg></button>
-        <button class="iconbtn sel-only" id="tFit" aria-label="Adatta ai fogli"><svg class="ico"><use href="#i-fit"/></svg></button>
-        <button class="iconbtn sel-only" id="tCopy" aria-label="Duplica"><svg class="ico"><use href="#i-copy"/></svg></button>
-        <button class="iconbtn sel-only" id="tDel" aria-label="Elimina elemento"><svg class="ico"><use href="#i-trash"/></svg></button>
-        <span class="sep" aria-hidden="true"></span>
-        <button class="iconbtn" id="tReal" aria-label="Anteprima a grandezza reale (scala 1:1)" title="Scala 1:1"><svg class="ico"><use href="#i-ruler"/></svg></button>
-      </div>
-      <p class="help">Un dito sposta. Due dita ingrandiscono e ruotano. La maniglia in basso a destra fa le due cose insieme.</p>
-      <input type="file" id="fPick" accept="image/*" class="sr" tabindex="-1">
-      <input type="file" id="fCam" accept="image/*" capture="environment" class="sr" tabindex="-1">
-    </div>
+ <div class="ed">
+  <div class="ed-top">
+    <div class="ed-title"><span class="kicker" id="edKicker">Editor</span><h1 id="h-editor" class="sr">Editor stencil</h1></div>
+    <button class="iconbtn" id="tReal" aria-label="Anteprima a grandezza reale (scala 1:1)" title="Scala 1:1"><svg class="ico"><use href="#i-ruler"/></svg></button>
+    <button class="iconbtn" id="toSave" disabled aria-label="Archivia" title="Archivia"><svg class="ico"><use href="#i-save"/></svg></button>
+    <button class="btn gold sm" id="toPrint" disabled style="width:auto"><svg class="ico"><use href="#i-printer"/></svg>Stampa</button>
+  </div>
+  <div class="ws-wrap" id="wsWrap">
+    <canvas id="ws" tabindex="0" aria-label="Foglio di lavoro: trascina per spostare, due dita per ingrandire e ruotare"></canvas>
+    <div class="ws-empty" id="wsEmpty"><div>Tocca <b>+ Immagine</b> per mettere un disegno sul foglio</div></div>
+    <span class="badge" id="gridBadge"></span>
+    <span class="badge badge2 hidden" id="selBadge"></span>
+  </div>
+  <div class="ed-side">
+   <div class="tools" role="toolbar" aria-label="Strumenti">
+    <button class="iconbtn add" id="tPick" aria-label="Aggiungi immagine" title="Immagine"><svg class="ico"><use href="#i-image"/></svg></button>
+    <button class="iconbtn" id="tCam" aria-label="Scatta foto" title="Fotocamera"><svg class="ico"><use href="#i-camera"/></svg></button>
+    <button class="iconbtn" id="tText" aria-label="Aggiungi scritta" title="Scritta"><svg class="ico"><use href="#i-text"/></svg></button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="iconbtn sel-only" id="tRotL" aria-label="Ruota a sinistra di 90 gradi"><svg class="ico"><use href="#i-rotl"/></svg></button>
+    <button class="iconbtn sel-only" id="tRotR" aria-label="Ruota a destra di 90 gradi"><svg class="ico"><use href="#i-rotr"/></svg></button>
+    <button class="iconbtn sel-only" id="tFlip" aria-label="Specchia"><svg class="ico"><use href="#i-flip"/></svg></button>
+    <button class="iconbtn sel-only" id="tCenter" aria-label="Centra sul foglio"><svg class="ico"><use href="#i-center"/></svg></button>
+    <button class="iconbtn sel-only" id="tFit" aria-label="Adatta ai fogli"><svg class="ico"><use href="#i-fit"/></svg></button>
+    <button class="iconbtn sel-only" id="tCopy" aria-label="Duplica"><svg class="ico"><use href="#i-copy"/></svg></button>
+    <button class="iconbtn sel-only" id="tDel" aria-label="Elimina elemento"><svg class="ico"><use href="#i-trash"/></svg></button>
+   </div>
+   <input type="file" id="fPick" accept="image/*" class="sr" tabindex="-1">
+   <input type="file" id="fCam" accept="image/*" capture="environment" class="sr" tabindex="-1">
 
-    <div>
-      <div class="tabs-inner" role="tablist" aria-label="Pannelli editor">
-        <button role="tab" aria-selected="true" data-panel="p-sheet">Foglio</button>
-        <button role="tab" aria-selected="false" data-panel="p-size">Misure</button>
-        <button role="tab" aria-selected="false" data-panel="p-style">Stile</button>
-        <button role="tab" aria-selected="false" data-panel="p-adjust">Regola</button>
-        <button role="tab" aria-selected="false" data-panel="p-crop">Taglia</button>
-        <button role="tab" aria-selected="false" data-panel="p-text">Scritta</button>
-      </div>
+   <div class="ed-tabs" role="tablist" aria-label="Pannelli editor">
+    <button role="tab" aria-selected="true" data-panel="p-sheet"><svg class="ico"><use href="#i-grid"/></svg>Fogli</button>
+    <button role="tab" aria-selected="false" data-panel="p-size"><svg class="ico"><use href="#i-fit"/></svg>Misure</button>
+    <button role="tab" aria-selected="false" data-panel="p-adjust"><svg class="ico"><use href="#i-sun"/></svg>Regola</button>
+    <button role="tab" aria-selected="false" data-panel="p-style"><svg class="ico"><use href="#i-brush"/></svg>Stile</button>
+    <button role="tab" aria-selected="false" data-panel="p-crop"><svg class="ico"><use href="#i-crop"/></svg>Taglia</button>
+    <button role="tab" aria-selected="false" data-panel="p-text"><svg class="ico"><use href="#i-text"/></svg>Scritta</button>
+   </div>
 
-      <!-- FOGLIO -->
-      <div class="panel" id="p-sheet" role="tabpanel">
-        <label class="l" for="sheetSel">Formato</label>
+   <div class="ed-panels" id="edPanels">
+    <!-- FOGLI -->
+    <div class="panel" id="p-sheet" role="tabpanel">
+      <div class="row">
+        <div><label class="l" for="sheetSel">Formato</label>
         <select id="sheetSel">
           <option value="A4">A4 · 210 × 297 mm</option>
           <option value="LETTER">Lettera · 216 × 279 mm</option>
           <option value="LEGAL">Legal · 216 × 356 mm</option>
           <option value="A5">A5 orizzontale · 210 × 148 mm</option>
           <option value="CUSTOM">Rotolo · lunghezza a scelta</option>
-        </select>
-        <div id="customLenWrap" class="hidden"><label class="l" for="customLen">Lunghezza del foglio (mm)</label><input id="customLen" type="number" min="40" max="1000" value="300" inputmode="numeric"></div>
-        <h2 class="sec">Fogli per zona del corpo</h2>
-        <div class="grids" id="grids"></div>
-        <div class="row" style="margin-top:12px;align-items:center">
-          <div><span class="help" style="margin:0">In larghezza</span>
-            <div class="stepper"><button class="iconbtn" id="colM" aria-label="Meno fogli in larghezza"><svg class="ico"><use href="#i-minus"/></svg></button><output id="colV">1</output><button class="iconbtn" id="colP" aria-label="Più fogli in larghezza"><svg class="ico"><use href="#i-plus"/></svg></button></div></div>
-          <div><span class="help" style="margin:0">In altezza</span>
-            <div class="stepper"><button class="iconbtn" id="rowM" aria-label="Meno fogli in altezza"><svg class="ico"><use href="#i-minus"/></svg></button><output id="rowV">1</output><button class="iconbtn" id="rowP" aria-label="Più fogli in altezza"><svg class="ico"><use href="#i-plus"/></svg></button></div></div>
-        </div>
-        <label class="switch" style="margin-top:8px"><span>Adatta il disegno quando cambio fogli</span><input type="checkbox" id="autoFit" checked></label>
-        <label class="l" for="overlap">Fascia in comune tra i fogli <output id="overlapV">0 mm</output></label>
-        <input id="overlap" type="range" min="0" max="30" step="1" value="0">
-        <label class="switch"><span>Segni per unire i fogli</span><input type="checkbox" id="marks" checked></label>
-        <label class="switch"><span>Numero del foglio</span><input type="checkbox" id="sheetNum" checked></label>
+        </select></div>
+        <div id="customLenWrap" class="hidden" style="flex:0 0 120px"><label class="l" for="customLen">Lunghezza mm</label><input id="customLen" type="number" min="40" max="1000" value="300" inputmode="numeric"></div>
       </div>
-
-      <!-- MISURE -->
-      <div class="panel hidden" id="p-size" role="tabpanel">
-        <div class="noitem sel-none">Tocca un disegno sul foglio per regolarlo.</div>
-        <div class="sel-need">
-          <div class="row">
-            <div><label class="l" for="wMm">Larghezza (mm)</label><input id="wMm" type="number" min="5" max="3000" step="1" inputmode="decimal"></div>
-            <div><label class="l" for="hMm">Altezza (mm)</label><input id="hMm" type="number" min="5" max="3000" step="1" inputmode="decimal"></div>
-          </div>
-          <label class="switch" style="margin-top:6px"><span>Blocca proporzioni</span><input type="checkbox" id="lockAR" checked></label>
-          <label class="l" for="angle">Rotazione <output id="angleV">0°</output></label>
-          <input id="angle" type="range" min="-180" max="180" step="1" value="0">
-          <div class="row" style="margin-top:6px">
-            <div><label class="l" for="posX">Da sinistra (mm)</label><input id="posX" type="number" step="1" inputmode="decimal"></div>
-            <div><label class="l" for="posY">Dall'alto (mm)</label><input id="posY" type="number" step="1" inputmode="decimal"></div>
-          </div>
-          <p class="help">Posizione del centro del disegno rispetto all'angolo in alto a sinistra del primo foglio.</p>
-        </div>
+      <label class="l">Fogli per zona del corpo</label>
+      <div class="grids" id="grids"></div>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <div><span class="help" style="margin:0">In larghezza</span>
+          <div class="stepper"><button class="iconbtn" id="colM" aria-label="Meno fogli in larghezza"><svg class="ico"><use href="#i-minus"/></svg></button><output id="colV">1</output><button class="iconbtn" id="colP" aria-label="Più fogli in larghezza"><svg class="ico"><use href="#i-plus"/></svg></button></div></div>
+        <div><span class="help" style="margin:0">In altezza</span>
+          <div class="stepper"><button class="iconbtn" id="rowM" aria-label="Meno fogli in altezza"><svg class="ico"><use href="#i-minus"/></svg></button><output id="rowV">1</output><button class="iconbtn" id="rowP" aria-label="Più fogli in altezza"><svg class="ico"><use href="#i-plus"/></svg></button></div></div>
       </div>
+      <label class="switch"><span>Adatta il disegno quando cambio fogli</span><input type="checkbox" id="autoFit" checked></label>
+      <label class="l" for="overlap">Fascia in comune tra i fogli <output id="overlapV">0 mm</output></label>
+      <input id="overlap" type="range" min="0" max="30" step="1" value="0">
+      <label class="switch"><span>Segni per unire i fogli</span><input type="checkbox" id="marks" checked></label>
+      <label class="switch"><span>Numero del foglio</span><input type="checkbox" id="sheetNum" checked></label>
+      <button class="btn ghost sm" id="newProject" style="margin-top:8px"><svg class="ico"><use href="#i-new"/></svg>Nuovo foglio vuoto</button>
+    </div>
 
-      <!-- STILE -->
-      <div class="panel hidden" id="p-style" role="tabpanel">
-        <div class="noitem sel-none-img">Tocca un'immagine sul foglio per cambiarne lo stile.</div>
-        <div class="sel-need-img">
-          <div class="seg" role="group" aria-label="Stile di stampa" id="modeSeg">
-            <button data-mode="orig" aria-pressed="false">Originale</button>
-            <button data-mode="line" aria-pressed="true">Linee</button>
-            <button data-mode="thresh" aria-pressed="false">Nero pieno</button>
-            <button data-mode="dither" aria-pressed="false">Puntinato</button>
-          </div>
-          <p class="help" id="origHelp">La foto così com'è, senza effetti. La stampante termica fa solo punti neri: le sfumature diventano punti fitti.</p>
-          <div id="lineOpts">
-            <label class="l" for="detail">Dettagli <output id="detailV">60</output></label><input id="detail" type="range" min="1" max="100" value="60">
-            <label class="l" for="thick">Spessore linea <output id="thickV">1</output></label><input id="thick" type="range" min="0" max="4" value="1">
-            <label class="l" for="smooth">Pulizia <output id="smoothV">1</output></label><input id="smooth" type="range" min="0" max="4" value="1">
-            <label class="l" for="fill">Riempi le zone scure <output id="fillV">0</output></label><input id="fill" type="range" min="0" max="100" value="0">
-            <p class="help">Per disegni già a linee alza “Riempi”: i tratti neri restano pieni.</p>
-          </div>
-          <div id="threshOpts"><label class="l" for="thresh">Soglia del nero <output id="threshV">128</output></label><input id="thresh" type="range" min="10" max="245" value="128"></div>
-          <label class="switch"><span>Inverti bianco e nero</span><input type="checkbox" id="invert"></label>
+    <!-- MISURE -->
+    <div class="panel hidden" id="p-size" role="tabpanel">
+      <div class="noitem sel-none">Tocca un disegno sul foglio per regolarlo.</div>
+      <div class="sel-need">
+        <div class="row">
+          <div><label class="l" for="wMm">Larghezza mm</label><input id="wMm" type="number" min="5" max="3000" step="1" inputmode="decimal"></div>
+          <div><label class="l" for="hMm">Altezza mm</label><input id="hMm" type="number" min="5" max="3000" step="1" inputmode="decimal"></div>
+        </div>
+        <label class="switch"><span>Blocca proporzioni</span><input type="checkbox" id="lockAR" checked></label>
+        <label class="l" for="angle">Rotazione <output id="angleV">0°</output></label>
+        <input id="angle" type="range" min="-180" max="180" step="1" value="0">
+        <div class="row">
+          <div><label class="l" for="posX">Da sinistra mm</label><input id="posX" type="number" step="1" inputmode="decimal"></div>
+          <div><label class="l" for="posY">Dall'alto mm</label><input id="posY" type="number" step="1" inputmode="decimal"></div>
         </div>
       </div>
+    </div>
 
-      <!-- REGOLA -->
-      <div class="panel hidden" id="p-adjust" role="tabpanel">
-        <div class="noitem sel-none-img">Tocca un'immagine sul foglio per regolarla.</div>
-        <div class="sel-need-img">
-          <label class="l" for="bright">Luminosità <output id="brightV">0</output></label><input id="bright" type="range" min="-100" max="100" value="0">
-          <label class="l" for="contrast">Contrasto <output id="contrastV">0</output></label><input id="contrast" type="range" min="-100" max="100" value="0">
-          <label class="l" for="sharp">Nitidezza <output id="sharpV">0</output></label><input id="sharp" type="range" min="0" max="100" value="0">
-          <button class="btn ghost sm" id="resetAdj" style="margin-top:14px">Azzera regolazioni</button>
-        </div>
+    <!-- REGOLA -->
+    <div class="panel hidden" id="p-adjust" role="tabpanel">
+      <div class="noitem sel-none-img">Tocca un'immagine sul foglio per regolarla.</div>
+      <div class="sel-need-img">
+        <label class="l" for="bright">Luminosità <output id="brightV">0</output></label><input id="bright" type="range" min="-100" max="100" value="0">
+        <label class="l" for="contrast">Contrasto <output id="contrastV">0</output></label><input id="contrast" type="range" min="-100" max="100" value="0">
+        <label class="l" for="opacity">Opacità <output id="opacityV">100</output></label><input id="opacity" type="range" min="5" max="100" value="100">
+        <label class="l" for="sharp">Nitidezza <output id="sharpV">0</output></label><input id="sharp" type="range" min="0" max="100" value="0">
+        <button class="btn ghost sm" id="resetAdj" style="margin-top:10px">Azzera regolazioni</button>
       </div>
+    </div>
 
-      <!-- TAGLIA -->
-      <div class="panel hidden" id="p-crop" role="tabpanel">
-        <div class="noitem sel-none-img">Tocca un'immagine sul foglio per tagliarla.</div>
-        <div class="sel-need-img">
-          <label class="l" for="cL">Sinistra <output id="cLV">0%</output></label><input id="cL" type="range" min="0" max="45" value="0">
-          <label class="l" for="cR">Destra <output id="cRV">0%</output></label><input id="cR" type="range" min="0" max="45" value="0">
-          <label class="l" for="cT">Alto <output id="cTV">0%</output></label><input id="cT" type="range" min="0" max="45" value="0">
-          <label class="l" for="cB">Basso <output id="cBV">0%</output></label><input id="cB" type="range" min="0" max="45" value="0">
-          <button class="btn ghost sm" id="autoTrim" style="margin-top:14px">Togli i bordi bianchi</button>
+    <!-- STILE -->
+    <div class="panel hidden" id="p-style" role="tabpanel">
+      <div class="noitem sel-none-img">Tocca un'immagine sul foglio per cambiarne lo stile.</div>
+      <div class="sel-need-img">
+        <div class="seg" role="group" aria-label="Stile di stampa" id="modeSeg">
+          <button data-mode="orig" aria-pressed="false">Originale</button>
+          <button data-mode="line" aria-pressed="true">Linee</button>
+          <button data-mode="thresh" aria-pressed="false">Nero</button>
+          <button data-mode="dither" aria-pressed="false">Puntinato</button>
         </div>
+        <p class="help" id="origHelp">La foto così com'è. La stampante fa solo punti neri: le sfumature diventano punti fitti.</p>
+        <div id="lineOpts">
+          <label class="l" for="detail">Dettagli <output id="detailV">60</output></label><input id="detail" type="range" min="1" max="100" value="60">
+          <label class="l" for="thick">Spessore linea <output id="thickV">1</output></label><input id="thick" type="range" min="0" max="4" value="1">
+          <label class="l" for="smooth">Pulizia <output id="smoothV">1</output></label><input id="smooth" type="range" min="0" max="4" value="1">
+          <label class="l" for="fill">Riempi le zone scure <output id="fillV">0</output></label><input id="fill" type="range" min="0" max="100" value="0">
+        </div>
+        <div id="threshOpts"><label class="l" for="thresh">Soglia del nero <output id="threshV">128</output></label><input id="thresh" type="range" min="10" max="245" value="128"></div>
+        <label class="switch"><span>Inverti bianco e nero</span><input type="checkbox" id="invert"></label>
       </div>
+    </div>
 
-      <!-- SCRITTA -->
-      <div class="panel hidden" id="p-text" role="tabpanel">
-        <div class="sel-none-text">
-          <p class="help">Aggiungi una scritta con un font da tatuaggio, poi spostala e ruotala con le dita come un disegno.</p>
-          <button class="btn sm" id="addText" style="margin-top:10px"><svg class="ico"><use href="#i-text"/></svg>Nuova scritta</button>
-        </div>
-        <div class="sel-need-text">
-          <label class="l" for="txt">Testo</label><textarea id="txt" rows="2"></textarea>
-          <label class="l" for="font">Font</label>
+    <!-- TAGLIA -->
+    <div class="panel hidden" id="p-crop" role="tabpanel">
+      <div class="noitem sel-none-img">Tocca un'immagine sul foglio per tagliarla.</div>
+      <div class="sel-need-img">
+        <p class="help" style="margin-top:6px">Sul foglio vedi in chiaro la parte che togli.</p>
+        <div class="row"><div><label class="l" for="cL">Sinistra <output id="cLV">0%</output></label><input id="cL" type="range" min="0" max="45" value="0"></div>
+          <div><label class="l" for="cR">Destra <output id="cRV">0%</output></label><input id="cR" type="range" min="0" max="45" value="0"></div></div>
+        <div class="row"><div><label class="l" for="cT">Alto <output id="cTV">0%</output></label><input id="cT" type="range" min="0" max="45" value="0"></div>
+          <div><label class="l" for="cB">Basso <output id="cBV">0%</output></label><input id="cB" type="range" min="0" max="45" value="0"></div></div>
+        <button class="btn ghost sm" id="autoTrim" style="margin-top:10px">Togli i bordi bianchi</button>
+      </div>
+    </div>
+
+    <!-- SCRITTA -->
+    <div class="panel hidden" id="p-text" role="tabpanel">
+      <div class="sel-none-text">
+        <p class="help">Aggiungi una scritta con un font da tatuaggio, poi spostala e ruotala con le dita.</p>
+        <button class="btn sm" id="addText" style="margin-top:10px"><svg class="ico"><use href="#i-text"/></svg>Nuova scritta</button>
+      </div>
+      <div class="sel-need-text">
+        <label class="l" for="txt">Testo</label><textarea id="txt" rows="2"></textarea>
+        <div class="row"><div><label class="l" for="font">Font</label>
           <select id="font">
             <option value="Great Vibes">Corsivo elegante</option>
             <option value="Pinyon Script">Corsivo calligrafico</option>
             <option value="UnifrakturMaguntia">Gotico</option>
             <option value="Playfair Display">Classico corsivo</option>
             <option value="Oswald">Stampatello</option>
-          </select>
-          <label class="l" for="txtSize">Altezza lettere <output id="txtSizeV">20 mm</output></label><input id="txtSize" type="range" min="4" max="200" value="20">
-        </div>
+          </select></div></div>
+        <label class="l" for="txtSize">Altezza lettere <output id="txtSizeV">20 mm</output></label><input id="txtSize" type="range" min="4" max="200" value="20">
       </div>
-
-      <div class="row" style="margin-top:20px">
-        <button class="btn" id="toSave" disabled><svg class="ico"><use href="#i-save"/></svg>Archivia</button>
-        <button class="btn gold" id="toPrint" disabled><svg class="ico"><use href="#i-printer"/></svg>Stampa</button>
-      </div>
-      <button class="btn ghost sm" id="newProject" style="margin-top:10px"><svg class="ico"><use href="#i-new"/></svg>Nuovo foglio vuoto</button>
     </div>
+   </div>
   </div>
+ </div>
 </section>
 
 <!-- ================= PRINT ================= -->
@@ -423,6 +441,9 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     </div>
     <label class="switch" style="margin-top:8px"><span>Specchia per stencil</span><input type="checkbox" id="mirror" checked></label>
     <p class="help">La carta stencil trasferisce al contrario: lascialo attivo per vedere il disegno dritto sulla pelle.</p>
+    <label class="l">Anti-pieghe</label>
+    <div class="seg" role="group" aria-label="Anti-pieghe" id="awSeg"><button data-aw="0" aria-pressed="true">Spento</button><button data-aw="1" aria-pressed="false">Leggero</button><button data-aw="2" aria-pressed="false">Forte</button></div>
+    <p class="help">Stampa due righe sottili lungo i lati del foglio: tengono tesa la carta termica e non la fanno stropicciare.</p>
   </div>
   <div class="card">
     <div id="printSummary" class="help" style="margin:0;color:var(--fg-2);white-space:pre-line"></div>
@@ -479,6 +500,9 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
       <div><label class="l" for="delay">Pausa (ms)</label><input id="delay" type="number" value="12" min="0" max="200"></div>
     </div>
     <label class="l" for="block">Righe per blocco immagine</label><input id="block" type="number" value="255" min="16" max="4000">
+    <label class="l" for="awMethod">Anti-pieghe: come farlo</label>
+    <select id="awMethod"><option value="cmd">Comando alla stampante (come ePrinter)</option><option value="lines">Righe disegnate dall'app</option><option value="both">Entrambi</option></select>
+    <p class="help">Se attivando l'anti-pieghe non vedi le righe ai lati, scegli “Righe disegnate dall'app”.</p>
     <label class="switch" style="margin-top:6px"><span>Reset (ESC @) all'inizio</span><input type="checkbox" id="optInit" checked></label>
     <label class="switch"><span>Avanza la carta alla fine</span><input type="checkbox" id="optFeed" checked></label>
     <label class="l" for="hex">Invia byte a mano (esadecimale)</label>
@@ -492,7 +516,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="btnExport">Esporta carte</button><button class="btn ghost sm" id="btnImport">Importa carte</button></div>
     <input type="file" id="fImport" accept="application/json,.json" class="sr" tabindex="-1">
   </div>
-  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.1 · software indipendente, non affiliato al produttore della stampante.</p>
+  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.2 · software indipendente, non affiliato al produttore della stampante.</p>
 </section>
 </main>
 
@@ -582,17 +606,23 @@ function go(name){
   current=name;
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id==='s-'+name));
   document.querySelectorAll('nav.tabbar button').forEach(b=>{ if(b.dataset.go===name) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
-  if(name==='editor') requestAnimationFrame(()=>{ resizeWs(); });
+  if(name==='editor') requestAnimationFrame(()=>{ setHdr(); resizeWs(); });
   if(name==='print') buildPrintPreview();
   if(name==='archive') renderArchive();
   window.scrollTo({top:0});
 }
 document.addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) go(b.dataset.go); });
-document.querySelectorAll('.tabs-inner button').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
+let activePanel='p-sheet';
+document.querySelectorAll('.ed-tabs button').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
 function showPanel(id){
-  document.querySelectorAll('.tabs-inner button').forEach(x=>x.setAttribute('aria-selected', x.dataset.panel===id));
+  activePanel=id;
+  document.querySelectorAll('.ed-tabs button').forEach(x=>x.setAttribute('aria-selected', x.dataset.panel===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('hidden', p.id!==id));
+  const ep=document.getElementById('edPanels'); if(ep) ep.scrollTop=0;
+  if(typeof markDirty==='function') markDirty();
 }
+function setHdr(){ const h=document.querySelector('header.top'); if(h) document.documentElement.style.setProperty('--hdr-h', h.offsetHeight+'px'); }
+setHdr(); window.addEventListener('resize',setHdr);
 
 /* ================= papers ================= */
 let papers=store.get('papers',null);
@@ -655,7 +685,7 @@ $('fImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return;
 
 /* ================= progetto: fogli + elementi ================= */
 const P = { sheet:'A4', customLen:300, cols:1, rows:1, overlap:0, marks:true, sheetNum:true, autoFit:true, items:[], sel:null, rec:null };
-const STYLE_DEFAULT = { mode:'line', detail:60, thick:1, smooth:1, fill:0, thresh:128, invert:false, bright:0, contrast:0, sharp:0, crop:{l:0,r:0,t:0,b:0} };
+const STYLE_DEFAULT = { mode:'line', detail:60, thick:1, smooth:1, fill:0, thresh:128, invert:false, bright:0, contrast:0, sharp:0, opacity:100, crop:{l:0,r:0,t:0,b:0} };
 const sheetWmm=()=> (P.sheet==='CUSTOM'?HEAD:SHEETS[P.sheet].w)/DPM;
 const sheetHmm=()=> P.sheet==='CUSTOM'?P.customLen:SHEETS[P.sheet].h/DPM;
 const sheetLabel=()=> P.sheet==='CUSTOM'?`rotolo ${P.customLen} mm`:SHEETS[P.sheet].label;
@@ -801,6 +831,7 @@ function processBits(it,W,H,scale){
   const S=it.style; let g=grayOf(it,W,H);
   const b=S.bright*1.28, c=S.contrast, f=(259*(c*2.55+255))/(255*(259-c*2.55));
   if(b||c) for(let i=0;i<g.length;i++) g[i]=clamp(f*(g[i]-128)+128+b,0,255);
+  const op=(S.opacity??100)/100, toneModes=S.mode==='orig'||S.mode==='dither'; if(op<1&&toneModes) for(let i=0;i<g.length;i++) g[i]=255-(255-g[i])*op;
   if(S.sharp>0){ const bl=boxBlur(g,W,H,Math.max(1,Math.round(2*scale))), k=S.sharp/40; for(let i=0;i<g.length;i++) g[i]=clamp(g[i]+(g[i]-bl[i])*k,0,255); }
   const out=new Uint8Array(W*H);
   if(S.mode==='orig'){ const e=Float32Array.from(g);
@@ -820,6 +851,8 @@ function processBits(it,W,H,scale){
       for(let x=0;x<W;x++){ let last=-1e9; for(let y=0;y<H;y++){ if(tmp[y*W+x]) last=y; if(y-last<=d) out[y*W+x]=1; } last=1e9; for(let y=H-1;y>=0;y--){ if(tmp[y*W+x]) last=y; if(last-y<=d) out[y*W+x]=1; } } }
   }
   if(S.invert) for(let i=0;i<out.length;i++) out[i]^=1;
+  if(op<1&&!toneModes){ const B=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5]; // schiarisce i tratti diradando i punti
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const i=y*W+x; if(out[i] && (B[(y&3)*4+(x&3)]+0.5)/16>op) out[i]=0; } }
   return out;
 }
 function bitsToCanvas(bits,W,H){ // nero opaco, bianco trasparente: gli elementi si sovrappongono senza coprirsi
@@ -849,18 +882,15 @@ function processVisible(){
 const ws=$('ws'), wctx=ws.getContext('2d');
 const view={ k:1, ox:0, oy:0, dpr:1, cw:0, ch:0 };
 function resizeWs(){
-  const wrap=$('wsWrap'), cw=wrap.clientWidth||340; const g=gridSize();
-  const pad=0.14;
-  const ar=(g.GH*(1+2*pad))/(g.GW*(1+2*pad));
-  const vh=window.innerHeight||800;
-  const ch=Math.round(clamp(cw*ar, 300, vh*(window.innerWidth>=1000?0.72:0.6)));
+  const wrap=$('wsWrap'), cw=wrap.clientWidth||340, ch=wrap.clientHeight||360, g=gridSize(), pad=0.07;
   view.dpr=Math.min(3,window.devicePixelRatio||1); view.cw=cw; view.ch=ch;
-  ws.style.height=ch+'px'; ws.width=Math.round(cw*view.dpr); ws.height=Math.round(ch*view.dpr);
-  view.k=Math.min(cw/(g.GW*(1+2*pad)), ch/(g.GH*(1+2*pad)));
-  view.ox=(cw-g.GW*view.k)/2; view.oy=(ch-g.GH*view.k)/2;
+  ws.width=Math.round(cw*view.dpr); ws.height=Math.round(ch*view.dpr);
+  view.k=Math.min(cw/(g.GW*(1+2*pad)), (ch-30)/(g.GH*(1+2*pad)));
+  view.ox=(cw-g.GW*view.k)/2; view.oy=30+((ch-30)-g.GH*view.k)/2;
   scheduleProcess(); markDirty();
 }
 window.addEventListener('resize',()=>{ if(current==='editor') resizeWs(); });
+if(window.ResizeObserver) new ResizeObserver(()=>{ if(current==='editor') resizeWs(); }).observe($('wsWrap'));
 const toScr=(x,y)=>[view.ox+x*view.k, view.oy+y*view.k];
 const toMm=(sx,sy)=>[(sx-view.ox)/view.k, (sy-view.oy)/view.k];
 
@@ -901,6 +931,17 @@ function draw(){
   wctx.fillStyle='#fff'; wctx.fillRect(0,0,g.GW*k,g.GH*k);
   P.items.forEach(it=>drawItem(wctx,it,k,1));
   wctx.restore();
+  // taglio: mostra in trasparenza la parte tolta
+  const cs=selItem();
+  if(activePanel==='p-crop' && cs && cs.type==='img'){
+    const cr=cs.style.crop, fx=1-(cr.l+cr.r)/100, fy=1-(cr.t+cr.b)/100, FW=cs.w/fx, FH=cs.h/fy;
+    const ox=-cs.w/2-FW*cr.l/100, oy=-cs.h/2-FH*cr.t/100;
+    wctx.save(); wctx.translate(cs.cx*k,cs.cy*k); wctx.rotate(cs.angle*DEG); if(cs.flip) wctx.scale(-1,1);
+    wctx.globalAlpha=0.35; wctx.filter='grayscale(1)'; wctx.drawImage(cs.img, ox*k, oy*k, FW*k, FH*k); wctx.filter='none'; wctx.globalAlpha=1;
+    wctx.fillStyle='rgba(224,122,110,.18)'; wctx.beginPath(); wctx.rect(ox*k,oy*k,FW*k,FH*k); wctx.rect(-cs.w/2*k,-cs.h/2*k,cs.w*k,cs.h*k); wctx.fill('evenodd');
+    wctx.strokeStyle='#E07A6E'; wctx.lineWidth=1.5; wctx.setLineDash([]); wctx.strokeRect(-cs.w/2*k,-cs.h/2*k,cs.w*k,cs.h*k);
+    wctx.restore();
+  }
   // bordi dei fogli e numeri
   wctx.save(); wctx.lineWidth=1;
   rects.forEach(r=>{
@@ -1016,7 +1057,8 @@ function syncSelUI(){
   document.querySelectorAll('.sel-none-text').forEach(e=>e.classList.toggle('hidden',!!isText));
   document.querySelectorAll('.sel-need-text').forEach(e=>e.classList.toggle('hidden',!isText));
   if(isImg){ const S=it.style;
-    ['detail','thick','smooth','fill','thresh','bright','contrast','sharp'].forEach(k=>{ $(k).value=S[k]; $(k+'V').textContent=S[k]; });
+    if(S.opacity==null) S.opacity=100;
+    ['detail','thick','smooth','fill','thresh','bright','contrast','sharp','opacity'].forEach(k=>{ $(k).value=S[k]; $(k+'V').textContent=S[k]; });
     [['cL','l'],['cR','r'],['cT','t'],['cB','b']].forEach(([id,k])=>{ $(id).value=S.crop[k]; $(id+'V').textContent=Math.round(S.crop[k])+'%'; });
     $('invert').checked=S.invert; syncMode(); }
   if(isText){ $('txt').value=it.text; $('font').value=it.font; $('txtSize').value=Math.round(it.size); $('txtSizeV').textContent=Math.round(it.size)+' mm'; }
@@ -1042,11 +1084,11 @@ $('angle').oninput=withSel(it=>{ it.angle=+$('angle').value; });
 $('posX').onchange=withSel(it=>{ it.cx=+$('posX').value; });
 $('posY').onchange=withSel(it=>{ it.cy=+$('posY').value; });
 function bindStyle(id,key,fmt){ const el=$(id); el.addEventListener('input',()=>{ const it=selItem(); if(!it||it.type!=='img') return; it.style[key]=+el.value; const o=$(id+'V'); if(o) o.textContent=fmt?fmt(+el.value):el.value; invalidate(it); }); }
-['detail','thick','smooth','fill','thresh','bright','contrast','sharp'].forEach(k=>bindStyle(k,k));
+['detail','thick','smooth','fill','thresh','bright','contrast','sharp','opacity'].forEach(k=>bindStyle(k,k));
 [['cL','l'],['cR','r'],['cT','t'],['cB','b']].forEach(([id,k])=>{ $(id).addEventListener('input',()=>{ const it=selItem(); if(!it||it.type!=='img') return; it.style.crop[k]=+$(id).value; $(id+'V').textContent=$(id).value+'%'; const w=it.w; it.h=w*itemAspect(it); invalidate(it); syncSelValues(); markDirty(); }); });
 $('invert').onchange=()=>{ const it=selItem(); if(it&&it.type==='img'){ it.style.invert=$('invert').checked; invalidate(it); } };
 document.querySelectorAll('#modeSeg button').forEach(b=>b.onclick=()=>{ const it=selItem(); if(!it||it.type!=='img') return; it.style.mode=b.dataset.mode; syncMode(); invalidate(it); });
-$('resetAdj').onclick=()=>{ const it=selItem(); if(!it||it.type!=='img') return; ['bright','contrast','sharp'].forEach(k=>{ it.style[k]=0; $(k).value=0; $(k+'V').textContent=0; }); invalidate(it); };
+$('resetAdj').onclick=()=>{ const it=selItem(); if(!it||it.type!=='img') return; ['bright','contrast','sharp'].forEach(k=>{ it.style[k]=0; $(k).value=0; $(k+'V').textContent=0; }); it.style.opacity=100; $('opacity').value=100; $('opacityV').textContent=100; invalidate(it); };
 $('autoTrim').onclick=()=>{ const it=selItem(); if(!it||it.type!=='img') return;
   const iw=it.img.naturalWidth, ih=it.img.naturalHeight, sc=Math.min(1,600/Math.max(iw,ih)), w=Math.round(iw*sc), h=Math.round(ih*sc);
   const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,w,h); x.drawImage(it.img,0,0,w,h);
@@ -1114,7 +1156,12 @@ function header(density,heat,type){ const v=$('cmdVariant').value, p=[];
   if($('optInit').checked) p.push(0x1B,0x40);
   if(v==='A'||v==='AB'){ p.push(0x1F,0x11,0x02,clamp(density,1,15)); p.push(0x1F,0x11,0x37,clamp(heat,1,255)); }
   if(v==='B'||v==='AB') p.push(0x1B,0x4E,0x04,clamp(density,1,15));
-  p.push(0x1F,0x11,parseInt(type,16)); p.push(0x1F,0x11,0x35,0x00); return p; }
+  p.push(0x1F,0x11,parseInt(type,16)); p.push(0x1F,0x11,0x35,0x00);
+  const aw=awLevel(), m=$('awMethod').value; if(m!=='lines') p.push(0x1F,0x11,0x88, aw===1?1:aw===2?2:3); // 1 leggero, 2 forte, 3 spento
+  return p; }
+function awLevel(){ return +(document.querySelector('#awSeg button[aria-pressed=true]')||{dataset:{aw:0}}).dataset.aw; }
+function addAntiWrinkle(b,W,H){ const aw=awLevel(), m=$('awMethod').value; if(!aw||m==='cmd') return;
+  const lw=aw===2?12:6, inset=8; for(let y=0;y<H;y++){ const o=y*W; for(let x=0;x<lw;x++){ b[o+inset+x]=1; b[o+W-1-inset-x]=1; } } }
 function packBitmap(bits,W,H,mirror){ const bpl=HEAD/8, out=new Uint8Array(bpl*H), off=Math.floor((HEAD-W)/2);
   for(let y=0;y<H;y++){ const o=y*W, ro=y*bpl; for(let x=0;x<W;x++){ if(bits[o+x]){ const X=mirror?HEAD-1-(off+x):off+x; if(X>=0&&X<HEAD) out[ro+(X>>3)]|=0x80>>(X&7); } } }
   return { data:out, bpl, off }; }
@@ -1152,7 +1199,8 @@ async function printJob(){
       $('btnPrintTxt').textContent=`Stampo foglio ${idx+1} di ${total}`;
       const {W}=j.s; let H=j.s.H; const bits=j.s.bits.slice();
       if(P.marks && rects.length>1) addMarks(bits,W,H);
-      if(!(P.marks&&rects.length>1)) H=Math.min(H, j.s.lastRow+1+16); // senza segni toglie il bianco in fondo
+      if(!(P.marks&&rects.length>1) && !(awLevel()&&$('awMethod').value!=='cmd')) H=Math.min(H, j.s.lastRow+1+16); // toglie il bianco in fondo
+      addAntiWrinkle(bits,W,H);
       const pk=packBitmap(bits,W,H,mirror);
       if(P.sheetNum && rects.length>1){ const nb=numberBitmap(j.r.n+'/'+rects.length), oy=H-nb.h-24, ox=HEAD-pk.off-nb.w-60;
         for(let y=0;y<nb.h;y++) for(let x=0;x<nb.w;x++) if(nb.b[y*nb.w+x]){ const X=ox+x, Y=oy+y; if(Y>=0&&Y<H&&X>=0&&X<HEAD) pk.data[Y*pk.bpl+(X>>3)]|=0x80>>(X&7); } }
@@ -1174,6 +1222,8 @@ $('btnNext').onclick=()=>waitNext&&waitNext.res();
 $('btnStop').onclick=()=>{ stopFlag=true; if(waitNext) waitNext.rej(new Error('interrotta')); };
 $('toPrint').onclick=()=>go('print');
 
+document.querySelectorAll('#awSeg button').forEach(b=>b.onclick=()=>{ document.querySelectorAll('#awSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b)); store.set('aw',+b.dataset.aw); });
+{ const v=store.get('aw',0); document.querySelectorAll('#awSeg button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.aw===v)); }
 /* ----- prove ----- */
 function testStrip(label,lines){ const c=document.createElement('canvas'); c.width=HEAD; c.height=lines; const x=c.getContext('2d');
   x.fillStyle='#fff'; x.fillRect(0,0,HEAD,lines); x.fillStyle='#000'; x.font=`700 ${Math.round(lines*.42)}px Archivo,Arial,sans-serif`; x.textBaseline='middle'; x.fillText(label,60,lines*.5);
@@ -1190,7 +1240,7 @@ $('btnScale').onclick=()=>runScale('d'); $('btnHeatScale').onclick=()=>runScale(
 $('btnHex').onclick=async()=>{ const c=$('hex').value.replace(/[^0-9a-f]/gi,''); if(!c||c.length%2){ log('Esadecimale non valido','err'); return; } const b=new Uint8Array(c.match(/../g).map(x=>parseInt(x,16))); try{ await send(b); log('→ '+hex(b),'info'); }catch(e){ log('Errore: '+e.message,'err'); } };
 $('btnStatus').onclick=async()=>{ try{ for(const b of [[0x1F,0x11,0x08],[0x1F,0x11,0x07],[0x1F,0x11,0x09],[0x1F,0x11,0x11]]){ await send(new Uint8Array(b)); log('→ '+hex(b),'info'); await sleep(200); } }catch(e){ log('Errore: '+e.message,'err'); } };
 $('btnCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('log').innerText); toast('Registro copiato'); }catch{ toast('Seleziona e copia a mano'); } };
-['cmdVariant','chunk','delay','block','optInit','optFeed','speed','mirror'].forEach(id=>{ const el=$(id), v=store.get('opt_'+id,null); if(v!=null){ if(el.type==='checkbox') el.checked=v; else el.value=v; } el.addEventListener('change',()=>store.set('opt_'+id,el.type==='checkbox'?el.checked:el.value)); });
+['cmdVariant','chunk','delay','block','optInit','optFeed','speed','mirror','awMethod'].forEach(id=>{ const el=$(id), v=store.get('opt_'+id,null); if(v!=null){ if(el.type==='checkbox') el.checked=v; else el.value=v; } el.addEventListener('change',()=>store.set('opt_'+id,el.type==='checkbox'?el.checked:el.value)); });
 
 /* ================= archivio (IndexedDB) ================= */
 const DB={ db:null,
