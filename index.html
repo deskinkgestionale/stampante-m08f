@@ -516,7 +516,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="btnExport">Esporta carte</button><button class="btn ghost sm" id="btnImport">Importa carte</button></div>
     <input type="file" id="fImport" accept="application/json,.json" class="sr" tabindex="-1">
   </div>
-  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.3 · software indipendente, non affiliato al produttore della stampante.</p>
+  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.4 · software indipendente, non affiliato al produttore della stampante.</p>
 </section>
 </main>
 
@@ -577,6 +577,23 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
       <button class="btn ghost sm" id="calReset" style="flex:1">Stima</button><button class="btn gold sm" id="calOk" style="flex:1">Fatto</button></div>
   </div>
 </div>
+
+<dialog id="dlgBt" aria-labelledby="dlgBtH">
+  <div class="dh" id="dlgBtH">Collegamento non riuscito</div>
+  <div class="db">
+    <p class="help" style="color:var(--fg-2)">Prova in quest'ordine:</p>
+    <ol style="margin:8px 0 0;padding-left:20px;line-height:1.55;font-size:14.5px">
+      <li>Impostazioni dell'iPhone → <b>Bluefy</b> → attiva <b>Bluetooth</b>.</li>
+      <li>Centro di Controllo: <b>Bluetooth acceso</b> (icona blu).</li>
+      <li><b>Chiudi ePrinter</b> del tutto (scorri via l'app), altrimenti tiene occupata la stampante.</li>
+      <li>Accendi la stampante e tienila vicina. Non collegarla dalle Impostazioni Bluetooth dell'iPhone: si collega solo da qui.</li>
+      <li>Chiudi Bluefy, riaprilo, ricarica la pagina e tocca <b>Collega</b>.</li>
+    </ol>
+    <p class="help" style="margin-top:12px">Dettaglio tecnico (mandalo a Claude se non si risolve):</p>
+    <p id="btErr" style="font:12px/1.4 ui-monospace,Menlo,monospace;background:#060607;border:1px solid var(--line);border-radius:8px;padding:8px;margin:4px 0 0;word-break:break-all"></p>
+  </div>
+  <div class="df"><button class="btn ghost" id="btCopy">Copia dettaglio</button><button class="btn gold" id="btClose">Ho capito</button></div>
+</dialog>
 
 <div class="toast" id="toast" role="status"></div>
 
@@ -1152,7 +1169,7 @@ async function connect(){
   if(!navigator.bluetooth){ toast('Bluetooth non disponibile in questo browser'); return; }
   if(device&&device.gatt.connected){ device.gatt.disconnect(); return; }
   try{ setConn('busy','Cerco…');
-    device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:OPTIONAL_SERVICES});
+    device=await pickDevice();
     device.addEventListener('gattserverdisconnected',()=>{ writeChar=null; setConn('off','Collega'); log('Stampante disconnessa','err'); });
     log('Scelta: '+(device.name||'senza nome'),'info');
     const server=await device.gatt.connect(), services=await server.getPrimaryServices(); let pref=null, fb=null;
@@ -1162,9 +1179,35 @@ async function connect(){
         if(p.write||p.writeWithoutResponse){ if(/ff02/i.test(c.uuid)&&!pref) pref=c; if(!fb) fb=c; } } }
     writeChar=pref||fb; if(!writeChar) throw new Error('nessun canale di scrittura');
     log('Scrivo su '+writeChar.uuid,'info'); setConn('on',device.name||'Collegata'); toast('Stampante collegata');
-  }catch(e){ log('Errore: '+e.message,'err'); setConn('off','Collega'); if(e.name!=='NotFoundError') toast('Collegamento non riuscito'); }
+  }catch(e){ log('Errore: '+(e.name||'')+' '+e.message,'err'); setConn('off','Collega');
+    if(e.name==='NotFoundError' && /cancel/i.test(e.message||'')) return;
+    showBtHelp(e); }
+}
+// prova più modi di aprire la ricerca: alcuni browser (Bluefy) rifiutano certe opzioni
+async function pickDevice(){
+  const prefixes=['T08','M08','AIMO','Q0','P8','Printer','PD','JD','MX','GT','YHK'];
+  const attempts=[
+    ()=>navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:OPTIONAL_SERVICES}),
+    ()=>navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:OPTIONAL_SERVICES.filter(x=>typeof x==='number')}),
+    ()=>navigator.bluetooth.requestDevice({acceptAllDevices:true}),
+    ()=>navigator.bluetooth.requestDevice({filters:prefixes.map(n=>({namePrefix:n})),optionalServices:OPTIONAL_SERVICES.filter(x=>typeof x==='number')})
+  ];
+  let last;
+  for(let i=0;i<attempts.length;i++){
+    try{ const d=await attempts[i](); if(i) log('Ricerca aperta con il metodo '+(i+1),'info'); return d; }
+    catch(e){ last=e; log('Tentativo '+(i+1)+': '+e.name+' '+e.message,'err');
+      if(e.name==='NotFoundError' || e.name==='SecurityError' || e.name==='NotAllowedError') throw e; }
+  }
+  throw last;
+}
+async function showBtHelp(e){
+  let avail=null; try{ avail=navigator.bluetooth.getAvailability? await navigator.bluetooth.getAvailability():null; }catch{}
+  $('btErr').textContent=`${e.name||'Errore'}: ${e.message||''}`+(avail===false?' · Bluetooth non disponibile':'');
+  $('dlgBt').showModal();
 }
 $('btnConn').onclick=connect;
+$('btClose').onclick=()=>$('dlgBt').close();
+$('btCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText($('btErr').textContent+'\n'+$('log').innerText); toast('Copiato'); }catch{ toast('Seleziona e copia a mano'); } };
 async function send(bytes,onProg,delayMul){
   const size=clamp(parseInt($('chunk').value,10)||128,20,512), pause=Math.round(clamp(parseInt($('delay').value,10)||0,0,200)*(delayMul||1));
   const nr=writeChar.properties.writeWithoutResponse&&writeChar.writeValueWithoutResponse;
