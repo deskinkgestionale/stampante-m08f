@@ -169,6 +169,18 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
 .toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 14px);transform:translate(-50%,20px);opacity:0;background:var(--fg);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:14px;z-index:50;transition:all .25s var(--ease);pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .warnbox{border:1px solid #5e4c2b;background:#1b170f;color:#e9d3a4;border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px}
+/* ---------- scala 1:1 ---------- */
+#real{position:fixed;inset:0;z-index:60;background:#e9e6df;display:flex;flex-direction:column}
+#real .rbar{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;background:var(--bg);color:var(--fg);border-bottom:1px solid var(--line)}
+#real .rbar b{font-size:14px;letter-spacing:.04em}
+#real .rbar small{display:block;color:var(--fg-3);font-size:11.5px;line-height:1.2}
+#real .rbar .grow{flex:1;min-width:0}
+#realCv{flex:1;display:block;width:100%;touch-action:none;cursor:grab}
+#real .rfoot{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 14px);transform:translateX(-50%);background:rgba(11,11,12,.85);color:var(--fg);font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:999px;pointer-events:none;white-space:nowrap}
+#calib{position:absolute;left:0;right:0;bottom:0;background:var(--surface);color:var(--fg);border-top:1px solid var(--line-strong);padding:14px 16px calc(env(safe-area-inset-bottom) + 14px);border-radius:16px 16px 0 0}
+#calib .row{align-items:center}
+#calib .row>.iconbtn{flex:0 0 48px}
+#calib .row>input{flex:1}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -197,6 +209,8 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
   <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v11h14V9M10 13h4"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h8V3M8 21v-7h8v7"/></symbol>
+  <symbol id="i-ruler" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="1.5"/><path d="M6 7v4M10 7v3M14 7v4M18 7v3"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-new" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M12 10v6M9 13h6"/></symbol>
 </svg>
 
@@ -249,6 +263,8 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
         <button class="iconbtn sel-only" id="tFit" aria-label="Adatta ai fogli"><svg class="ico"><use href="#i-fit"/></svg></button>
         <button class="iconbtn sel-only" id="tCopy" aria-label="Duplica"><svg class="ico"><use href="#i-copy"/></svg></button>
         <button class="iconbtn sel-only" id="tDel" aria-label="Elimina elemento"><svg class="ico"><use href="#i-trash"/></svg></button>
+        <span class="sep" aria-hidden="true"></span>
+        <button class="iconbtn" id="tReal" aria-label="Anteprima a grandezza reale (scala 1:1)" title="Scala 1:1"><svg class="ico"><use href="#i-ruler"/></svg></button>
       </div>
       <p class="help">Un dito sposta. Due dita ingrandiscono e ruotano. La maniglia in basso a destra fa le due cose insieme.</p>
       <input type="file" id="fPick" accept="image/*" class="sr" tabindex="-1">
@@ -410,6 +426,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
   </div>
   <div class="card">
     <div id="printSummary" class="help" style="margin:0;color:var(--fg-2);white-space:pre-line"></div>
+    <button class="btn sm" id="pReal" style="margin-top:12px"><svg class="ico"><use href="#i-ruler"/></svg>Anteprima a grandezza reale (1:1)</button>
     <div class="sheets" id="sheetPrev"></div>
     <p class="help">I fogli vuoti non vengono stampati.</p>
     <button class="btn gold" id="btnPrint" disabled style="margin-top:12px"><svg class="ico"><use href="#i-printer"/></svg><span id="btnPrintTxt">Stampa</span></button>
@@ -475,7 +492,7 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="row" style="margin-top:10px"><button class="btn ghost sm" id="btnExport">Esporta carte</button><button class="btn ghost sm" id="btnImport">Importa carte</button></div>
     <input type="file" id="fImport" accept="application/json,.json" class="sr" tabindex="-1">
   </div>
-  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.0 · software indipendente, non affiliato al produttore della stampante.</p>
+  <p class="help" style="text-align:center;margin-top:18px">Trimarchi Stencil · versione 2.1 · software indipendente, non affiliato al produttore della stampante.</p>
 </section>
 </main>
 
@@ -517,6 +534,25 @@ dialog .df{display:flex;gap:10px;padding:0 18px 18px}
     <div class="df"><button class="btn ghost" type="button" id="svCancel">Annulla</button><button class="btn gold" value="ok" id="svOk">Salva</button></div>
   </form>
 </dialog>
+
+<div id="real" class="hidden" role="dialog" aria-modal="true" aria-labelledby="realH">
+  <div class="rbar">
+    <button class="iconbtn" id="realClose" aria-label="Chiudi anteprima"><svg class="ico"><use href="#i-close"/></svg></button>
+    <div class="grow"><b id="realH">Scala 1:1</b><small id="realInfo"></small></div>
+    <button class="iconbtn" id="realFlip" aria-pressed="false" aria-label="Mostra come esce dalla stampante (specchiato)" title="Specchiato"><svg class="ico"><use href="#i-flip"/></svg></button>
+    <button class="btn sm" id="realCal" style="width:auto">Calibra</button>
+  </div>
+  <canvas id="realCv" aria-label="Disegno a grandezza reale. Trascina per scorrere."></canvas>
+  <div class="rfoot" id="realFoot">Trascina per scorrere il disegno</div>
+  <div id="calib" class="hidden">
+    <div class="row"><button class="iconbtn" id="calM" aria-label="Più piccolo"><svg class="ico"><use href="#i-minus"/></svg></button>
+      <input id="calR" type="range" min="2" max="9" step="0.005" aria-label="Dimensione">
+      <button class="iconbtn" id="calP" aria-label="Più grande"><svg class="ico"><use href="#i-plus"/></svg></button></div>
+    <div class="row" style="margin-top:10px">
+      <div class="seg" role="group" aria-label="Riferimento" id="calRef" style="flex:2"><button data-ref="card" aria-pressed="true">Carta</button><button data-ref="ruler" aria-pressed="false">Righello</button></div>
+      <button class="btn ghost sm" id="calReset" style="flex:1">Stima</button><button class="btn gold sm" id="calOk" style="flex:1">Fatto</button></div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status"></div>
 
@@ -1254,6 +1290,90 @@ $('fArchImport').onchange=async e=>{ const f=e.target.files[0]; if(!f) return;
       await DB.put(c); n++; }
     toast(`${n} stencil ripristinati`); renderArchive(); }catch{ toast('File di backup non valido'); }
   e.target.value=''; };
+
+
+/* ================= scala 1:1 ================= */
+// px CSS per mm: stimato dal modello del dispositivo, poi calibrabile dall'utente
+function guessPxPerMm(){
+  const w=Math.min(screen.width,screen.height), h=Math.max(screen.width,screen.height), d=window.devicePixelRatio||1, key=`${w}x${h}@${Math.round(d)}`;
+  const ppi={ // iPhone e iPad (ppi fisici)
+    '375x667@2':326,'414x736@3':401,'320x568@2':326,'375x812@3':458,'414x896@2':326,'414x896@3':458,'390x844@3':460,'428x926@3':458,
+    '393x852@3':460,'430x932@3':460,'402x874@3':460,'440x956@3':460,'360x780@3':476,
+    '744x1133@2':326,'768x1024@2':264,'810x1080@2':264,'820x1180@2':264,'834x1112@2':264,'834x1194@2':264,'1024x1366@2':264,'834x1210@2':264,'1032x1376@2':264 }[key];
+  if(ppi) return { v: ppi/d/25.4, src:'stimata dal modello' };
+  return { v: 96/25.4, src:'standard, da calibrare' };
+}
+let realPxMm = store.get('pxPerMm', null);
+const realState={ open:false, ox:0, oy:0, flip:false, bmps:new Map(), ref:'card' };
+const rcv=$('realCv'), rctx=rcv.getContext('2d');
+function pxmm(){ return realPxMm || guessPxPerMm().v; }
+async function openReal(){
+  if(!P.items.length){ toast('Il foglio è vuoto'); return; }
+  $('real').classList.remove('hidden'); realState.open=true; document.body.style.overflow='hidden';
+  $('realFoot').textContent='Preparo il disegno alla risoluzione di stampa…';
+  sizeReal();
+  // centro sul disegno selezionato o sui fogli
+  const g=gridSize(), it=selItem(), cx=it?it.cx:g.GW/2, cy=it?it.cy:g.GH/2, k=pxmm();
+  realState.ox=rcv.clientWidth/2-cx*k; realState.oy=rcv.clientHeight/2-cy*k;
+  drawReal();
+  await sleep(30); await ensureFonts();
+  realState.bmps=new Map(); for(const x of P.items) if(x.type==='img') realState.bmps.set(x.id, renderItemBitmap(x,DPM,14e6));
+  $('realFoot').textContent='Trascina per scorrere · i puntini sono quelli che stampa la testina';
+  drawReal(); updateRealInfo();
+}
+function closeReal(){ $('real').classList.add('hidden'); $('calib').classList.add('hidden'); realState.open=false; document.body.style.overflow=''; realState.bmps=new Map(); }
+function updateRealInfo(){ const g=guessPxPerMm(); $('realInfo').textContent = realPxMm ? 'Schermo calibrato' : (g.src==='stimata dal modello' ? 'Misura stimata dal modello · calibra per sicurezza' : 'Schermo non riconosciuto · tocca Calibra'); }
+function sizeReal(){ const d=Math.min(3,window.devicePixelRatio||1); rcv.width=Math.round(rcv.clientWidth*d); rcv.height=Math.round(rcv.clientHeight*d); }
+function drawReal(){
+  if(!realState.open) return;
+  const d=Math.min(3,window.devicePixelRatio||1), k=pxmm(), W=rcv.clientWidth, H=rcv.clientHeight;
+  rctx.setTransform(d,0,0,d,0,0); rctx.fillStyle='#d9d5cc'; rctx.fillRect(0,0,W,H);
+  rctx.save(); rctx.translate(realState.ox,realState.oy);
+  if(realState.flip){ const g=gridSize(); rctx.translate(g.GW*k,0); rctx.scale(-1,1); }
+  const rects=sheetRects();
+  rctx.fillStyle='#fff'; rects.forEach(r=>rctx.fillRect(r.x*k,r.y*k,r.w*k,r.h*k));
+  rctx.save(); rctx.beginPath(); rects.forEach(r=>rctx.rect(r.x*k,r.y*k,r.w*k,r.h*k)); rctx.clip();
+  P.items.forEach(it=>{ const save=it.cache.bmp; const b=realState.bmps.get(it.id); if(b) it.cache.bmp=b; rctx.imageSmoothingEnabled=!b; drawItem(rctx,it,k,1); it.cache.bmp=save; });
+  rctx.restore();
+  rctx.strokeStyle='rgba(120,100,60,.8)'; rctx.lineWidth=1; rctx.setLineDash([6,5]); rects.forEach(r=>rctx.strokeRect(r.x*k+.5,r.y*k+.5,r.w*k-1,r.h*k-1)); rctx.setLineDash([]);
+  rctx.restore();
+  // righelli in mm (dall'angolo del primo foglio)
+  const RW=22; rctx.fillStyle='rgba(11,11,12,.88)'; rctx.fillRect(0,0,W,RW); rctx.fillRect(0,0,RW,H);
+  rctx.strokeStyle='#C2A878'; rctx.fillStyle='#F4F2EE'; rctx.font='600 9px Archivo,sans-serif'; rctx.lineWidth=1;
+  const sgn=realState.flip?-1:1, g=gridSize(), x0=realState.flip?realState.ox+g.GW*k:realState.ox;
+  const m0=sgn>0?Math.ceil((RW-x0)/k):Math.ceil((x0-W)/k), m1=sgn>0?Math.floor((W-x0)/k):Math.floor((x0-RW)/k);
+  for(let mm=m0; mm<=m1 && mm-m0<4000; mm++){ const x=x0+sgn*mm*k;
+    const L=mm%10===0?12:mm%5===0?8:4; rctx.beginPath(); rctx.moveTo(x+.5,RW); rctx.lineTo(x+.5,RW-L); rctx.stroke(); if(mm%10===0) rctx.fillText(String(mm/10),x+2,9); }
+  for(let mm=Math.ceil((RW-realState.oy)/k), m1y=Math.floor((H-realState.oy)/k); mm<=m1y; mm++){ const y=realState.oy+mm*k;
+    const L=mm%10===0?12:mm%5===0?8:4; rctx.beginPath(); rctx.moveTo(RW,y+.5); rctx.lineTo(RW-L,y+.5); rctx.stroke(); if(mm%10===0){ rctx.save(); rctx.translate(9,y+2); rctx.rotate(-Math.PI/2); rctx.fillText(String(mm/10),-14,0); rctx.restore(); } }
+  rctx.fillStyle='#C2A878'; rctx.fillRect(0,0,RW,RW); rctx.fillStyle='#0B0B0C'; rctx.font='700 8px Archivo,sans-serif'; rctx.fillText('cm',4,14);
+  // calibrazione
+  if(!$('calib').classList.contains('hidden')){
+    rctx.save(); const top=RW+8, left=RW+16;
+    if(realState.ref==='card'){ const cw=53.98*k, ch=85.6*k; rctx.fillStyle='rgba(194,168,120,.25)'; rctx.strokeStyle='#8F7B56'; rctx.lineWidth=2;
+      rctx.beginPath(); rctx.roundRect?rctx.roundRect(left,top,cw,ch,3.2*k):rctx.rect(left,top,cw,ch); rctx.fill(); rctx.stroke();
+      rctx.fillStyle='#0B0B0C'; rctx.font='600 13px Archivo,sans-serif'; rctx.fillText('Carta in verticale',left+10,top+22); rctx.fillText('54 × 85,6 mm',left+10,top+40); }
+    else { const L=50*k, x=left+30; rctx.strokeStyle='#0B0B0C'; rctx.lineWidth=2; rctx.beginPath(); rctx.moveTo(x,top); rctx.lineTo(x,top+L); rctx.stroke();
+      for(let i=0;i<=50;i++){ const y=top+i*k; rctx.beginPath(); rctx.moveTo(x,y); rctx.lineTo(x+(i%10?(i%5?6:10):18),y); rctx.stroke(); }
+      rctx.fillStyle='#0B0B0C'; rctx.font='600 13px Archivo,sans-serif'; rctx.fillText('0',x+24,top+5); rctx.fillText('5 cm',x+24,top+L+5); }
+    rctx.restore();
+  }
+}
+let rDrag=null;
+rcv.addEventListener('pointerdown',e=>{ rcv.setPointerCapture(e.pointerId); rDrag={x:e.clientX,y:e.clientY,ox:realState.ox,oy:realState.oy}; });
+rcv.addEventListener('pointermove',e=>{ if(!rDrag) return; realState.ox=rDrag.ox+(e.clientX-rDrag.x); realState.oy=rDrag.oy+(e.clientY-rDrag.y); drawReal(); });
+['pointerup','pointercancel'].forEach(t=>rcv.addEventListener(t,()=>rDrag=null));
+window.addEventListener('resize',()=>{ if(realState.open){ sizeReal(); drawReal(); } });
+document.addEventListener('keydown',e=>{ if(realState.open&&e.key==='Escape') closeReal(); });
+$('tReal').onclick=openReal; $('pReal').onclick=openReal; $('realClose').onclick=closeReal;
+$('realFlip').onclick=()=>{ realState.flip=!realState.flip; $('realFlip').setAttribute('aria-pressed',realState.flip); drawReal(); };
+function setPx(v){ realPxMm=clamp(v,2,9); $('calR').value=realPxMm; drawReal(); }
+$('realCal').onclick=()=>{ const c=$('calib'); c.classList.toggle('hidden'); if(!c.classList.contains('hidden')){ $('calR').value=pxmm(); $('realInfo').textContent=realState.ref==='card'?'Appoggia carta di credito o bancomat in verticale sul rettangolo e regola':'Appoggia un righello: la linea deve misurare 5 cm'; } else updateRealInfo(); drawReal(); };
+$('calR').addEventListener('input',e=>setPx(+e.target.value));
+$('calM').onclick=()=>setPx(pxmm()-0.01); $('calP').onclick=()=>setPx(pxmm()+0.01);
+document.querySelectorAll('#calRef button').forEach(b=>b.onclick=()=>{ realState.ref=b.dataset.ref; document.querySelectorAll('#calRef button').forEach(x=>x.setAttribute('aria-pressed',x===b)); $('realInfo').textContent=realState.ref==='card'?'Appoggia carta di credito o bancomat in verticale sul rettangolo e regola':'Appoggia un righello: la linea deve misurare 5 cm'; drawReal(); });
+$('calReset').onclick=()=>{ realPxMm=null; store.set('pxPerMm',null); $('calR').value=pxmm(); drawReal(); toast('Uso il valore stimato dal modello'); };
+$('calOk').onclick=()=>{ if(realPxMm) store.set('pxPerMm',realPxMm); $('calib').classList.add('hidden'); updateRealInfo(); drawReal(); toast('Schermo calibrato'); };
 
 /* ================= init ================= */
 refreshPaperUI(); renderGrids(); afterChange(); syncSelUI(); setConn('off','Collega'); renderArchive();
