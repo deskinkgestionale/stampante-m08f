@@ -1,6 +1,6 @@
 # Trimarchi Stencil – app per AIMO M08F
 
-**File dell'app:** `trimarchi-stencil.html` (versione 1.1, 26 ottobre 2026)
+**File dell'app:** `trimarchi-stencil.html` (versione 2.0, 26 ottobre 2026)
 **Link:** https://deskinkgestionale.github.io/stampante-m08f/ (su iPhone/iPad aprirlo in Bluefy)
 
 ## Come aprirla
@@ -8,7 +8,15 @@
 - **iPhone / iPad:** serve l'app gratuita **Bluefy** e un indirizzo https → carica `trimarchi-stencil.html` nell'archivio GitHub `stampante-m08f` rinominandolo `index.html` e attiva GitHub Pages.
 - Prima di collegarti chiudi l'app ePrinter, altrimenti la stampante resta occupata.
 
-## Cosa fa
+## Cosa fa (2.0)
+- **Foglio sempre visibile** (A4, Lettera, Legal, A5, rotolo) con il disegno dentro in proporzione reale
+- Sposta con un dito, ingrandisci e ruota con due dita; maniglie per eliminare, specchiare, duplicare, ruotare+ingrandire; linee guida al centro
+- Fino a 9 elementi: immagini e scritte con font da tatuaggio
+- **Fogli per zona del corpo** come ePrinter: 1×2 braccia, 2×1 petto, 2×2 schiena, 3×2 petto, 2×3 gambe, 3×3 petto e schiena, oppure griglia a scelta
+- Anteprima di ogni foglio prima di stampare; i fogli vuoti vengono saltati
+- Archivio con tutto il progetto (fogli, elementi, carta, intensità)
+
+## Funzioni della versione 1.1 (sempre presenti)
 - Carica disegno da galleria, file, fotocamera (o incolla / trascina sul Mac)
 - Misure in mm con proporzioni bloccate, rotazione, taglio, "togli bordi bianchi"
 - Stile: Originale (foto senza effetti), Linee (stencil dai contorni), Nero pieno (soglia), Puntinato
@@ -35,3 +43,5 @@ L'app è scritta da zero: codice, testi e grafica sono nuovi. Dall'analisi di eP
 - 25/10: analisi del protocollo, pagina di test
 - 26/10: versione 1.0 completa dell'app
 - 26/10: versione 1.1 – originale, formati A4/Lettera/Legal, zone del corpo, archivio clienti
+- 26/10: studio della modalità tatuaggio di ePrinter (vedi FUNZIONI-EPRINTER-TATUAGGIO.md)
+- 26/10: versione 2.0 – nuovo editor con foglio, gesti con le dita, griglie di fogli come ePrinter
