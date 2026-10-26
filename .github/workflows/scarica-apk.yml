@@ -1,0 +1,31 @@
+name: Scarica APK ePrinter
+
+on:
+  push:
+    paths:
+      - .github/workflows/scarica-apk.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scarica:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Installa apkeep
+        run: |
+          curl -sSL -o apkeep https://github.com/EFForg/apkeep/releases/latest/download/apkeep-x86_64-unknown-linux-gnu
+          chmod +x apkeep
+      - name: Scarica com.quyin.eprinter
+        run: |
+          mkdir -p out
+          ./apkeep -a com.quyin.eprinter -d apk-pure -o 'acknowledge_dangers=true' out || true
+          ls -la out
+          test -n "$(ls -A out)"
+      - name: Carica il file (resta 1 giorno)
+        uses: actions/upload-artifact@v4
+        with:
+          name: eprinter-apk
+          path: out/
+          retention-days: 1
